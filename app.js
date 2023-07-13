@@ -2,8 +2,10 @@ const express = require('express')
 const session = require('express-session')
 const passport = require('./config/passport')
 const handlebars = require('express-handlebars')
+const handlebarsHelpers = require('./helpers/handlebars-helpers')
 const flash = require('connect-flash')
 const routes = require('./routes')
+const { getUser } = require('./helpers/auth-helpers')
 
 const app = express()
 const port = process.env.PORT || 3000
@@ -11,7 +13,7 @@ const SESSION_SECRET = 'secret' // 新增這行
 
 const db = require('./models')
 
-app.engine('hbs', handlebars({ extname: '.hbs' }))
+app.engine('hbs', handlebars({ extname: '.hbs', helpers: handlebarsHelpers }))
 app.set('view engine', 'hbs')
 
 app.use(express.urlencoded({ extended: true }))
@@ -24,8 +26,9 @@ app.use(passport.session()) // 啟動 session 功能
 
 app.use(flash()) // 掛載套件
 app.use((req, res, next) => {
-  res.locals.success_messages = req.flash('success_messages') // 設定 success_msg 訊息
-  res.locals.error_messages = req.flash('error_messages') // 設定 warning_msg 訊息
+  res.locals.success_messages = req.flash('success_messages')
+  res.locals.error_messages = req.flash('error_messages')
+  res.locals.user = getUser(req)
   next()
 })
 

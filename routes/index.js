@@ -4,8 +4,10 @@ const passport = require('../config/passport')
 const admin = require('./modules/admin')
 const restaurantController = require('../controllers/restaurant-controller')
 const userController = require('../controllers/user-controller')
+const { authenticated } = require('../middleware/auth')
 const { generalErrorHandler } = require('../middleware/error-handler')
 
+router.use('/admin', admin)
 router.get('/signup', userController.signUpPage)
 router.post('/signup', userController.signUp) // 注意用 post
 
@@ -20,8 +22,7 @@ router.post(
 ) // 注意是 post
 router.get('/logout', userController.logout)
 
-router.use('/admin', admin)
-router.get('/restaurants', restaurantController.getRestaurants)
+router.get('/restaurants', authenticated, restaurantController.getRestaurants)
 
 router.use('/', (req, res) => res.redirect('/restaurants'))
 router.use('/', generalErrorHandler) // error handler 有特出處理方式，因此順序無關

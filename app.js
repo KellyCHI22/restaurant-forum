@@ -4,6 +4,7 @@ const passport = require('./config/passport')
 const handlebars = require('express-handlebars')
 const handlebarsHelpers = require('./helpers/handlebars-helpers')
 const flash = require('connect-flash')
+const methodOverride = require('method-override')
 const routes = require('./routes')
 const { getUser } = require('./helpers/auth-helpers')
 
@@ -24,7 +25,8 @@ app.use(
 app.use(passport.initialize()) // 初始化 Passport
 app.use(passport.session()) // 啟動 session 功能
 
-app.use(flash()) // 掛載套件
+app.use(flash())
+app.use(methodOverride('_method'))
 app.use((req, res, next) => {
   res.locals.success_messages = req.flash('success_messages')
   res.locals.error_messages = req.flash('error_messages')

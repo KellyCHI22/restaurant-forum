@@ -14,7 +14,10 @@
   <label class='form-label' for='categoryId'>Category</label>
   <select class='form-control' id='categoryId' name='categoryId'>
     {{#each categories}}
-      <option value='{{this.id}}'>{{this.name}}</option>
+      {{!-- '../' 意為回到上一層 context，如此才能取得 restaurant 變數  --}}
+      <option value="{{this.id}}" {{#ifCond this.id ../restaurant.categoryId}} selected {{/ifCond}}>
+        {{this.name}}
+      </option>
     {{/each}}
   </select>
 </div>

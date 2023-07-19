@@ -17,6 +17,7 @@ router.delete('/restaurants/:id', adminController.deleteRestaurant);
 router.patch('/users/:id', adminController.patchUsers);
 router.get('/categories/:id', categoryController.getCategories);
 router.put('/categories/:id', categoryController.putCategory);
+router.delete('/categories/:id', categoryController.deleteCategory);
 router.get('/restaurants', adminController.getRestaurants);
 router.post(
   '/restaurants',

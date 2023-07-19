@@ -1,4 +1,17 @@
 {{>admin-tabs route='categories'}}
+<form
+  action='/admin/categories'
+  method='POST'
+  style='display: inline;'
+>
+<div class="row">
+  <div class="col-auto">
+  <input class="form-control" type="text" placeholder="Category name" name="name">
+  </div>
+  <button type='submit' class='col-auto btn btn-primary'>Create</button>
+  </div>
+</form>
+<br />
 <table class="table align-middle">
   <thead class="thead-dark">
     <tr>

@@ -18,7 +18,7 @@
       <tr>
         <th scope='row'>{{this.id}}</th>
         <td>{{this.name}}</td>
-        <td>{{this.Category.name}}</td>
+        <td>{{#if this.Category.name}}{{this.Category.name}}{{else}}(未分類){{/if}}</td>
         <td>
           <button type='button' class='btn btn-link'>
             <a

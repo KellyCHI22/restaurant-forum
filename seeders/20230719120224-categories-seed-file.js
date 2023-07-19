@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     await queryInterface.bulkInsert(
@@ -10,18 +10,18 @@ module.exports = {
         '墨西哥料理',
         '素食料理',
         '美式料理',
-        '複合式料理',
-      ].map((item) => {
+        '複合式料理'
+      ].map(item => {
         return {
           name: item,
           created_at: new Date(),
-          updated_at: new Date(),
-        };
+          updated_at: new Date()
+        }
       }),
       {}
-    );
+    )
   },
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.bulkDelete('Categories', {});
-  },
-};
+    await queryInterface.bulkDelete('Categories', {})
+  }
+}

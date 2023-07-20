@@ -1,0 +1,21 @@
+<div class='row'>
+  <div class='col-md-12'>
+    <h1>{{restaurant.name}}</h1>
+    <p>{{#if
+        restaurant.Category.name
+      }}{{restaurant.Category.name}}{{else}}(未分類){{/if}}</p>
+  </div>
+  <br />
+  <div class='col-md-4'>
+    <div class='well'>
+      <ul class='list'>
+        <li><strong>評論數：</strong> 0</li>
+        <li><strong>瀏覽次數：</strong> {{restaurant.viewCounts}}</li>
+        <li><strong>收藏次數：</strong> 0</li>
+      </ul>
+    </div>
+  </div>
+  <hr />
+</div>
+{{! history.back() 等同於點擊瀏覽器的上一頁按鈕 }}
+<a class='btn btn-outline-secondary' href='javascript:history.back()'>Back</a>

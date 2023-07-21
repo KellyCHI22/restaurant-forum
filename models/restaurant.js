@@ -19,6 +19,7 @@ module.exports = (sequelize, DataTypes) => {
         // will also be updated with the new value.
         onUpdate: 'CASCADE'
       })
+      Restaurant.hasMany(models.Comment, { foreignKey: 'restaurantId' })
     }
   }
   Restaurant.init(

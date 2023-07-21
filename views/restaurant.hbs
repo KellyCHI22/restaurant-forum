@@ -29,5 +29,14 @@
   </div>
   <hr />
 </div>
-{{! history.back() 等同於點擊瀏覽器的上一頁按鈕 }}
-<a class='btn btn-outline-secondary' href='javascript:history.back()'>Back</a>
+{{! Comment }}
+<form action='/comments' method='POST'>
+  <div class='form-row mb-3'>
+    <label class='form-label' for='text'>留下評論：</label>
+    <textarea class='form-control' id='text' name='text' rows='3'></textarea>
+  </div>
+  {{! 隱藏的 input 欄位，這個欄位會幫忙把 restaurant.id 送到後端 }}
+  <input type='hidden' name='restaurantId' value='{{restaurant.id}}' />
+  <button type='submit' class='btn btn-primary'>Submit</button>
+  <a class='btn btn-outline-secondary' href='javascript:history.back()'>Back</a>
+</form>

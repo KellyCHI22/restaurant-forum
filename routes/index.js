@@ -2,8 +2,9 @@ const express = require('express')
 const router = express.Router()
 const passport = require('../config/passport')
 const admin = require('./modules/admin')
-const restaurantController = require('../controllers/restaurant-controller')
 const userController = require('../controllers/user-controller')
+const restaurantController = require('../controllers/restaurant-controller')
+const commentController = require('../controllers/​​comment-controller')
 const { authenticated, authenticatedAdmin } = require('../middleware/auth')
 const { generalErrorHandler } = require('../middleware/error-handler')
 
@@ -33,6 +34,8 @@ router.get(
   restaurantController.getRestaurant
 )
 router.get('/restaurants', authenticated, restaurantController.getRestaurants)
+
+router.post('/comments', authenticated, commentController.postComment)
 
 router.use('/', (req, res) => res.redirect('/restaurants'))
 router.use('/', generalErrorHandler) // error handler 有特出處理方式，因此順序無關

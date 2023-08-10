@@ -1,6 +1,6 @@
 const bcrypt = require('bcryptjs') // 載入 bcrypt
-const db = require('../models')
-const { User } = db
+const { User, Comment, Restaurant } = require('../models')
+const { localFileHandler } = require('../helpers/file-helpers')
 
 const userController = {
   signUpPage: (req, res) => {
@@ -43,6 +43,67 @@ const userController = {
     req.flash('success_messages', '登出成功！')
     req.logout() // 把 user id 對應的 session 清除掉
     res.redirect('/signin')
+  },
+  getUser: (req, res, next) => {
+    Promise.all([
+      User.findByPk(req.params.id, {
+        nest: true,
+        include: [Comment]
+      }),
+      Comment.findAll({
+        where: { userId: req.params.id },
+        include: Restaurant,
+        nest: true,
+        raw: true
+      })
+    ])
+      .then(([user, comments]) => {
+        if (!user) throw new Error("Restaurant didn't exist!")
+        res.render('users/profile', {
+          shownUser: user.toJSON(),
+          comments
+        })
+      })
+      .catch(err => next(err))
+  },
+  editUser: (req, res, next) => {
+    if (parseInt(req.params.id) !== parseInt(req.user.id)) {
+      return res.redirect(`/users/${req.params.id}`)
+    }
+    User.findByPk(req.params.id, {
+      nest: true,
+      include: [Comment]
+    })
+      .then(user => {
+        if (!user) throw new Error("User doesn't exist!")
+        console.log(user)
+        res.render('users/edit', { shownUser: user.toJSON() })
+      })
+      .catch(err => next(err))
+  },
+  putUser: (req, res, next) => {
+    if (parseInt(req.params.id) !== parseInt(req.user.id)) {
+      return res.redirect(`/users/${req.params.id}`)
+    }
+    const { name } = req.body
+    const { file } = req
+    if (!name) throw new Error('User name is required!')
+    Promise.all([
+      User.findByPk(req.params.id), // 去資料庫查有沒有這間餐廳
+      localFileHandler(file) // 把檔案傳到 file-helper 處理
+    ])
+      .then(([user, filePath]) => {
+        if (!user) throw new Error("User doesn't exist!")
+        return user.update({
+          name,
+          image: filePath || user.image
+        })
+      })
+      .then(() => {
+        req.flash('success_messages', 'User was successfully updated')
+        res.redirect(`/users/${req.params.id}`)
+      })
+      .catch(err => next(err))
   }
 }
 

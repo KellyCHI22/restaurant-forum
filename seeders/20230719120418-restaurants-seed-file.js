@@ -21,7 +21,8 @@ module.exports = {
         created_at: new Date(),
         updated_at: new Date(),
         category_id:
-          categories[Math.floor(Math.random() * categories.length)].id // 增加這裡
+          categories[Math.floor(Math.random() * categories.length)].id, // 增加這裡
+        view_counts: 0
       }))
     )
   },

@@ -1,0 +1,31 @@
+<form action="/users/{{user.id}}?_method=PUT" method="POST" enctype="multipart/form-data" class='card mb-3 p-5'>
+  <div class='form-row mb-3'>
+    <label class='form-label' for='name'>Name</label>
+    <input
+      class='form-control'
+      type='text'
+      name='name'
+      id='name'
+      placeholder='Enter name'
+      value='{{user.name}}'
+      required
+    />
+  </div>
+  <div class='form-row mb-3'>
+    <label class='form-label' for='image'>Image</label>
+    <input
+      class='form-control'
+      type='file'
+      class='form-control-file'
+      id='image'
+      name='image'
+    />
+  </div>
+  <div>
+    <button type='submit' class='btn btn-primary'>Submit</button>
+    <a
+      class='btn btn-outline-secondary'
+      href='javascript:history.back()'
+    >Back</a>
+  </div>
+</fo>

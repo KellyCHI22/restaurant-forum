@@ -18,7 +18,8 @@ module.exports = (sequelize, DataTypes) => {
       email: DataTypes.STRING,
       password: DataTypes.STRING,
       // ! 純 JavaScript 實作，駝峰命名即可
-      isAdmin: DataTypes.BOOLEAN
+      isAdmin: DataTypes.BOOLEAN,
+      image: DataTypes.STRING
     },
     {
       sequelize,

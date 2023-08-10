@@ -1,0 +1,55 @@
+<div class='card mb-3'>
+  <div class='row g-0'>
+    <div class='col-md-4'>
+      <img
+        class='img-responsive center-block'
+        src='{{shownUser.image}}'
+        style='width: 250px; height: 250px; object-fit: cover; margin: 5px; transition: opacity 0.5s; opacity:0;'
+        onload='this.style.opacity=1;'
+      />
+      <br />
+    </div>
+    <div class='col-md-8'>
+      <div class='card-body'>
+        <h5 class='card-title'>{{shownUser.name}}</h5>
+        <p class='card-text'>{{shownUser.email}}</p>
+        {{!-- <p class='card-text'>{{comments.length}} 間已評論餐廳</p> --}}
+        {{#ifCond shownUser.id user.id}}
+          <a href='/users/{{shownUser.id}}/edit'><button
+              class='btn btn-primary my-sm-0 my-2'
+            >edit</button></a>
+        {{/ifCond}}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class='row g-3'>
+  <div class='col-8'>
+    <div class='card'>
+      <div class='card-header'>
+        {{shownUser.Comments.length}}
+        間已評論餐廳
+      </div>
+      <div class='card-body'>
+        <div class='row row-cols-md-12 g-1'>
+          {{#each comments}}
+            <a
+              href='/restaurants/{{this.Restaurant.id}}'
+              class='text-decoration-none col-1'
+            >
+              <img
+                src={{this.Restaurant.image}}
+                width='60'
+                height='60'
+                class='avatar'
+                style='transition: opacity 0.5s; opacity:0;'
+                onload='this.style.opacity=1;'
+              />
+            </a>
+          {{/each}}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

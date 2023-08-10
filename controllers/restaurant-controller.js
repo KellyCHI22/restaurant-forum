@@ -27,9 +27,13 @@ const restaurantController = {
       Category.findAll({ raw: true })
     ])
       .then(([restaurants, categories]) => {
+        // 先取出登入 user 的收藏餐廳清單，以增進效能
+        const favoritedRestaurantsId =
+          req.user && req.user.FavoritedRestaurants.map(fr => fr.id)
         const data = restaurants.rows.map(r => ({
           ...r,
-          description: r.description.substring(0, 50)
+          description: r.description.substring(0, 50),
+          isFavorited: favoritedRestaurantsId.includes(r.id)
         }))
         return res.render('restaurants', {
           restaurants: data,
@@ -43,14 +47,26 @@ const restaurantController = {
   getRestaurant: (req, res, next) => {
     Restaurant.findByPk(req.params.id, {
       nest: true,
-      include: [Category, { model: Comment, include: User }],
+      include: [
+        Category,
+        { model: Comment, include: User },
+        { model: User, as: 'FavoritedUsers' }
+      ],
       // ! need to define the order at the top level and indicate the model
       order: [[{ model: Comment }, 'createdAt', 'DESC']]
     })
       .then(restaurant => {
         if (!restaurant) throw new Error("Restaurant didn't exist!")
         restaurant.increment('view_counts')
-        res.render('restaurant', { restaurant: restaurant.toJSON() })
+
+        // 使用 some() 來減少不必要的計算
+        const isFavorited = restaurant.FavoritedUsers.some(
+          f => f.id === req.user.id
+        )
+        res.render('restaurant', {
+          restaurant: restaurant.toJSON(),
+          isFavorited
+        })
       })
       .catch(err => next(err))
   },

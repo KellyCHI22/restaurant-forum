@@ -30,10 +30,14 @@ const restaurantController = {
         // 先取出登入 user 的收藏餐廳清單，以增進效能
         const favoritedRestaurantsId =
           req.user && req.user.FavoritedRestaurants.map(fr => fr.id)
+        const visitedRestaurantsId =
+          req.user && req.user.VisitedRestaurants.map(fr => fr.id)
+
         const data = restaurants.rows.map(r => ({
           ...r,
           description: r.description.substring(0, 50),
-          isFavorited: favoritedRestaurantsId.includes(r.id)
+          isFavorited: favoritedRestaurantsId.includes(r.id),
+          isVisited: visitedRestaurantsId.includes(r.id)
         }))
         return res.render('restaurants', {
           restaurants: data,
@@ -50,7 +54,8 @@ const restaurantController = {
       include: [
         Category,
         { model: Comment, include: User },
-        { model: User, as: 'FavoritedUsers' }
+        { model: User, as: 'FavoritedUsers' },
+        { model: User, as: 'VisitedUsers' }
       ],
       // ! need to define the order at the top level and indicate the model
       order: [[{ model: Comment }, 'createdAt', 'DESC']]
@@ -63,9 +68,13 @@ const restaurantController = {
         const isFavorited = restaurant.FavoritedUsers.some(
           f => f.id === req.user.id
         )
+        const isVisited = restaurant.VisitedUsers.some(
+          f => f.id === req.user.id
+        )
         res.render('restaurant', {
           restaurant: restaurant.toJSON(),
-          isFavorited
+          isFavorited,
+          isVisited
         })
       })
       .catch(err => next(err))

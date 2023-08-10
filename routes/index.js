@@ -67,6 +67,18 @@ router.delete(
   userController.removeFavorite
 )
 
+// * visit history
+router.post(
+  '/visit-history/:restaurantId',
+  authenticated,
+  userController.addVisitHistory
+)
+router.delete(
+  '/visit-history/:restaurantId',
+  authenticated,
+  userController.removeVisitHistory
+)
+
 router.use('/', (req, res) => res.redirect('/restaurants'))
 router.use('/', generalErrorHandler) // error handler 有特出處理方式，因此順序無關
 

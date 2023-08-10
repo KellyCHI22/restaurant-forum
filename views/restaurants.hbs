@@ -44,6 +44,15 @@
               <button type="submit" class="btn btn-primary m-1">加到最愛</button>
             </form>
             {{/if}}
+            {{#if isVisited}}
+            <form action="/visit-history/{{this.id}}?_method=DELETE" method="POST">
+              <button type="submit" class="btn btn-danger m-1">移除去過</button>
+            </form>
+            {{else}}
+            <form action="/visit-history/{{this.id}}" method="POST">
+              <button type="submit" class="btn btn-primary m-1">加到去過</button>
+            </form>
+            {{/if}}
           </div>
         </div>
       </div>

@@ -1,5 +1,11 @@
 const bcrypt = require('bcryptjs') // 載入 bcrypt
-const { User, Comment, Restaurant, Favorite } = require('../models')
+const {
+  User,
+  Comment,
+  Restaurant,
+  Favorite,
+  VisitHistory
+} = require('../models')
 const { localFileHandler } = require('../helpers/file-helpers')
 
 const userController = {
@@ -143,6 +149,48 @@ const userController = {
         if (!favorite) throw new Error("You haven't favorited this restaurant")
 
         return favorite.destroy()
+      })
+      .then(() => res.redirect('back'))
+      .catch(err => next(err))
+  },
+  addVisitHistory: (req, res, next) => {
+    const { restaurantId } = req.params
+    return Promise.all([
+      Restaurant.findByPk(restaurantId),
+      VisitHistory.findOne({
+        where: {
+          userId: req.user.id,
+          restaurantId
+        }
+      })
+    ])
+      .then(([restaurant, visitHistory]) => {
+        if (!restaurant) throw new Error("Restaurant didn't exist!")
+        if (visitHistory) {
+          throw new Error(
+            'You have already added this restaurant to your history!'
+          )
+        }
+
+        return VisitHistory.create({
+          userId: req.user.id,
+          restaurantId
+        })
+      })
+      .then(() => res.redirect('back'))
+      .catch(err => next(err))
+  },
+  removeVisitHistory: (req, res, next) => {
+    return VisitHistory.findOne({
+      where: {
+        userId: req.user.id,
+        restaurantId: req.params.restaurantId
+      }
+    })
+      .then(visitHistory => {
+        if (!visitHistory) { throw new Error("You haven't added this restaurant to your history!") }
+
+        return visitHistory.destroy()
       })
       .then(() => res.redirect('back'))
       .catch(err => next(err))

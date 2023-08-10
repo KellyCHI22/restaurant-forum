@@ -23,6 +23,7 @@
   </div>
   <div class='col-md-8'>
     <p style='white-space: break-spaces;'>{{restaurant.description}}</p>
+    <div class="d-flex align-items-center gap-3">
     <a href='/restaurants/{{restaurant.id}}/dashboard'><button
         class='btn btn-primary'
       >Dashboard</button></a>
@@ -35,6 +36,16 @@
         <button type="submit" class="btn btn-primary">加到最愛</button>
       </form>
     {{/if}}
+    {{#if isVisited}}
+      <form action="/visit-history/{{restaurant.id}}?_method=DELETE" method="POST">
+        <button type="submit" class="btn btn-danger m-1">移除去過</button>
+      </form>
+    {{else}}
+      <form action="/visit-history/{{restaurant.id}}" method="POST">
+        <button type="submit" class="btn btn-primary m-1">加到去過</button>
+      </form>
+    {{/if}}
+    </div>
   </div>
   <hr />
 </div>

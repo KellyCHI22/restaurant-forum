@@ -12,7 +12,6 @@ const upload = require('../middleware/multer')
 router.use('/admin', authenticatedAdmin, admin)
 router.get('/signup', userController.signUpPage)
 router.post('/signup', userController.signUp) // 注意用 post
-
 router.get('/signin', userController.signInPage)
 router.post(
   '/signin',
@@ -24,6 +23,17 @@ router.post(
 ) // 注意是 post
 router.get('/logout', userController.logout)
 
+// * users
+router.get('/users/:id/edit', authenticated, userController.editUser)
+router.get('/users/:id', authenticated, userController.getUser)
+router.put(
+  '/users/:id',
+  authenticated,
+  upload.single('image'),
+  userController.putUser
+)
+
+// * restaurants
 router.get('/restaurants/feeds', authenticated, restaurantController.getFeeds) // 新增這一行
 router.get(
   '/restaurants/:id/dashboard',
@@ -37,6 +47,7 @@ router.get(
 )
 router.get('/restaurants', authenticated, restaurantController.getRestaurants)
 
+// * comments
 router.delete(
   '/comments/:id',
   authenticatedAdmin,
@@ -44,13 +55,16 @@ router.delete(
 )
 router.post('/comments', authenticated, commentController.postComment)
 
-router.get('/users/:id/edit', authenticated, userController.editUser)
-router.get('/users/:id', authenticated, userController.getUser)
-router.put(
-  '/users/:id',
+// * favorite
+router.post(
+  '/favorite/:restaurantId',
   authenticated,
-  upload.single('image'),
-  userController.putUser
+  userController.addFavorite
+)
+router.delete(
+  '/favorite/:restaurantId',
+  authenticated,
+  userController.removeFavorite
 )
 
 router.use('/', (req, res) => res.redirect('/restaurants'))

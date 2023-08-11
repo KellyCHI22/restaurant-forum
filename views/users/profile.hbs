@@ -12,34 +12,151 @@
     <div class='col-md-8'>
       <div class='card-body'>
         <h5 class='card-title'>{{shownUser.name}}</h5>
-        <p class='card-text'>{{shownUser.email}}</p>
-        {{!-- <p class='card-text'>{{comments.length}} 間已評論餐廳</p> --}}
+        <p class=''>{{shownUser.email}}</p>
+        <p class=''>{{comments.length}} 間已評論餐廳</p>
+        <p class=''>{{shownUser.FavoritedRestaurants.length}}
+          間已喜歡餐廳</p>
+        <p class='card-text'>{{shownUser.VisitedRestaurants.length}}
+          間已去過餐廳</p>
+        <p class=''>{{shownUser.Followings.length}}
+          followings (正在追蹤)</p>
+        <p class=''>{{shownUser.Followers.length}}
+          followers (追蹤者)</p>
         {{#ifCond shownUser.id user.id}}
           <a href='/users/{{shownUser.id}}/edit'><button
               class='btn btn-primary my-sm-0 my-2'
             >edit</button></a>
+        {{else}}
+          {{#if shownUser.isFollowed}}
+            <form
+              action='/following/{{shownUser.id}}?_method=DELETE'
+              method='POST'
+              style='display: contents;'
+            >
+              <button type='submit' class='btn btn-danger'>取消追蹤</button>
+            </form>
+          {{else}}
+            <form
+              action='/following/{{shownUser.id}}'
+              method='POST'
+              style='display: contents;'
+            >
+              <button type='submit' class='btn btn-primary'>追蹤</button>
+            </form>
+          {{/if}}
         {{/ifCond}}
+
       </div>
     </div>
   </div>
 </div>
 
 <div class='row g-3'>
-  <div class='col-8'>
+  <div class='col-4'>
+    <div class='card mb-3'>
+      <div class='card-header'>
+        {{shownUser.Followings.length}}
+        followings (正在追蹤)
+      </div>
+      <div class='card-body'>
+        <div class='d-flex gap-1 flex-wrap'>
+          {{#each shownUser.Followings}}
+            <a href='/users/{{this.id}}' class='text-decoration-none'>
+              <img
+                src={{this.image}}
+                width='60'
+                height='60'
+                class='avatar'
+                style='transition: opacity 0.5s; opacity:0;'
+                onload='this.style.opacity=1;'
+              />
+            </a>
+          {{/each}}
+        </div>
+      </div>
+    </div>
     <div class='card'>
       <div class='card-header'>
-        {{shownUser.Comments.length}}
+        {{shownUser.Followers.length}}
+        followers (追蹤者)
+      </div>
+      <div class='card-body'>
+        <div class='d-flex gap-1 flex-wrap'>
+          {{#each shownUser.Followers}}
+            <a href='/users/{{this.id}}' class='text-decoration-none'>
+              <img
+                src={{this.image}}
+                width='60'
+                height='60'
+                class='avatar'
+                style='transition: opacity 0.5s; opacity:0;'
+                onload='this.style.opacity=1;'
+              />
+            </a>
+          {{/each}}
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class='col-8'>
+    <div class='card mb-3'>
+      <div class='card-header'>
+        {{comments.length}}
         間已評論餐廳
       </div>
       <div class='card-body'>
-        <div class='row row-cols-md-12 g-1'>
+        <div class='d-flex gap-1 flex-wrap'>
           {{#each comments}}
             <a
               href='/restaurants/{{this.Restaurant.id}}'
-              class='text-decoration-none col-1'
+              class='text-decoration-none'
             >
               <img
                 src={{this.Restaurant.image}}
+                width='60'
+                height='60'
+                class='avatar'
+                style='transition: opacity 0.5s; opacity:0;'
+                onload='this.style.opacity=1;'
+              />
+            </a>
+          {{/each}}
+        </div>
+      </div>
+    </div>
+    <div class='card mb-3'>
+      <div class='card-header'>
+        {{shownUser.FavoritedRestaurants.length}}
+        間已收藏餐廳
+      </div>
+      <div class='card-body'>
+        <div class='d-flex gap-1 flex-wrap'>
+          {{#each shownUser.FavoritedRestaurants}}
+            <a href='/restaurants/{{this.id}}' class='text-decoration-none'>
+              <img
+                src={{this.image}}
+                width='60'
+                height='60'
+                class='avatar'
+                style='transition: opacity 0.5s; opacity:0;'
+                onload='this.style.opacity=1;'
+              />
+            </a>
+          {{/each}}
+        </div>
+      </div>
+    </div>
+    <div class='card'>
+      <div class='card-header'>
+        {{shownUser.VisitedRestaurants.length}}
+        間已去過餐廳
+      </div>
+      <div class='card-body'>
+        <div class='d-flex gap-1 flex-wrap'>
+          {{#each shownUser.VisitedRestaurants}}
+            <a href='/restaurants/{{this.id}}' class='text-decoration-none'>
+              <img
+                src={{this.image}}
                 width='60'
                 height='60'
                 class='avatar'

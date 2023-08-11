@@ -55,19 +55,39 @@ const userController = {
     Promise.all([
       User.findByPk(req.params.id, {
         nest: true,
-        include: [Comment]
+        include: [
+          // * 加上 attributes 指定需要的資料欄位
+          {
+            model: Restaurant,
+            as: 'FavoritedRestaurants',
+            attributes: ['id', 'image']
+          },
+          {
+            model: Restaurant,
+            as: 'VisitedRestaurants',
+            attributes: ['id', 'image']
+          },
+          { model: User, as: 'Followers', attributes: ['id', 'image'] },
+          { model: User, as: 'Followings', attributes: ['id', 'image'] }
+        ]
       }),
       Comment.findAll({
         where: { userId: req.params.id },
         include: Restaurant,
         nest: true,
-        raw: true
+        raw: true,
+        group: ['Restaurant.id']
       })
     ])
       .then(([user, comments]) => {
-        if (!user) throw new Error("Restaurant didn't exist!")
+        if (!user) throw new Error("User didn't exist!")
         res.render('users/profile', {
-          shownUser: user.toJSON(),
+          shownUser: {
+            ...user.toJSON(),
+            isFollowed: req.user.Followings.some(
+              following => following.id === user.id
+            )
+          },
           comments
         })
       })
@@ -219,7 +239,9 @@ const userController = {
   // * 追蹤與收藏的邏輯雷同，先反查確定關係尚未存在，再新增追蹤紀錄
   addFollowing: (req, res, next) => {
     const { userId } = req.params
-    if (parseInt(userId) === parseInt(req.user.id)) { throw new Error('You cannot follow yourself!') }
+    if (parseInt(userId) === parseInt(req.user.id)) {
+      throw new Error('You cannot follow yourself!')
+    }
     Promise.all([
       User.findByPk(userId),
       Followship.findOne({

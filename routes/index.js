@@ -35,6 +35,11 @@ router.put(
 )
 
 // * restaurants
+router.get(
+  '/restaurants/top',
+  authenticated,
+  restaurantController.getTopRestaurants
+)
 router.get('/restaurants/feeds', authenticated, restaurantController.getFeeds) // 新增這一行
 router.get(
   '/restaurants/:id/dashboard',

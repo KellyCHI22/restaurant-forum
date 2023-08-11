@@ -115,6 +115,33 @@ const restaurantController = {
         })
       })
       .catch(err => next(err))
+  },
+  // ? 不知道怎麼用 sequelize 去執行 sort
+  getTopRestaurants: (req, res, next) => {
+    return Restaurant.findAll({
+      include: [{ model: User, as: 'FavoritedUsers' }],
+      limit: 10
+    })
+      .then(restaurants => {
+        const favoritedRestaurantsId =
+          req.user && req.user.FavoritedRestaurants.map(fr => fr.id)
+        const visitedRestaurantsId =
+          req.user && req.user.VisitedRestaurants.map(fr => fr.id)
+
+        const result = restaurants
+          .map(r => ({
+            ...r.toJSON(),
+            description: r.description.substring(0, 50),
+            favoritedUsersCount: r.FavoritedUsers.length,
+            isFavorited: favoritedRestaurantsId.includes(r.id),
+            isVisited: visitedRestaurantsId.includes(r.id)
+          }))
+          .sort((a, b) => b.favoritedUsersCount - a.favoritedUsersCount)
+        return res.render('top-restaurants', {
+          restaurants: result
+        })
+      })
+      .catch(err => next(err))
   }
 }
 module.exports = restaurantController

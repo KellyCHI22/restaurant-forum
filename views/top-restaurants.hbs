@@ -1,0 +1,49 @@
+{{> restaurant-tabs route='topRestaurants'}}
+<h1>人氣餐廳</h1>
+<hr />
+<div class="mx-auto" style="width: 600px;">
+  {{#each restaurants}}
+    <div class='card p-3 mb-4 shadow-sm' style="">
+      <div class="row">
+        <a href='/restaurants/{{this.id}}' class="col-5">
+          <img
+            class='card-img-top img-fluid'
+            src='{{this.image}}'
+            alt='Card image cap'
+            style='transition: opacity 0.5s; opacity:0;'
+            onload='this.style.opacity=1;'
+          />
+        </a>
+        <div class='col-7'>
+          <h5 class='card-text'>
+            <a href='/restaurants/{{this.id}}'>
+              {{this.name}}
+            </a>
+          </h5>
+          <span class='badge bg-secondary mb-2'>收藏數: {{this.favoritedUsersCount}}</span>
+          <p class='card-text text-truncate'>{{this.description}}</p>
+          <div class="d-flex gap-2">
+            {{#if isFavorited}}
+            <form action="/favorite/{{this.id}}?_method=DELETE" method="POST">
+              <button type="submit" class="btn btn-danger">移除最愛</button>
+            </form>
+            {{else}}
+            <form action="/favorite/{{this.id}}" method="POST">
+              <button type="submit" class="btn btn-primary">加到最愛</button>
+            </form>
+            {{/if}}
+            {{#if isVisited}}
+            <form action="/visit-history/{{this.id}}?_method=DELETE" method="POST">
+              <button type="submit" class="btn btn-danger">移除去過</button>
+            </form>
+            {{else}}
+            <form action="/visit-history/{{this.id}}" method="POST">
+              <button type="submit" class="btn btn-primary">加到去過</button>
+            </form>
+            {{/if}}
+          </div>
+        </div>
+      </div>
+    </div>
+  {{/each}}
+</div>

@@ -52,7 +52,9 @@ passport.deserializeUser((id, cb) => {
     // * 用 as 來標明我們想要引入的關係，對應到我們在 model 裡設定的名稱
     include: [
       { model: Restaurant, as: 'FavoritedRestaurants' },
-      { model: Restaurant, as: 'VisitedRestaurants' }
+      { model: Restaurant, as: 'VisitedRestaurants' },
+      { model: User, as: 'Followers' },
+      { model: User, as: 'Followings' }
     ]
   })
     .then(user => cb(null, user.toJSON()))

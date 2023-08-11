@@ -80,6 +80,14 @@ router.delete(
   userController.removeVisitHistory
 )
 
+// * followship，追蹤的對象是「某個使用者」，因此這邊動態路由是取 :userId
+router.post('/following/:userId', authenticated, userController.addFollowing)
+router.delete(
+  '/following/:userId',
+  authenticated,
+  userController.removeFollowing
+)
+
 router.use('/', (req, res) => res.redirect('/restaurants'))
 router.use('/', generalErrorHandler) // error handler 有特出處理方式，因此順序無關
 

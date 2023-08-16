@@ -1,14 +1,19 @@
 const { Restaurant, Category, Comment, User } = require('../models')
+const { getOffset, getPagination } = require('../helpers/pagination-helper')
 
 const restaurantService = {
-  getRestaurants: (categoryId, limit, offset, next) => {
-    return Promise.all([
-      // 用 findAndCountAll 方法，可以取得 items.count 得知一共有幾筆資料
+  // * 使用 callback function 將 data 和 error 做後續處理，這邊就不需要 next 了
+  getRestaurants: (req, cb) => {
+    const DEFAULT_LIMIT = 9
+    const categoryId = Number(req.query.categoryId) || ''
+    const page = Number(req.query.page) || 1
+    const limit = Number(req.query.limit) || DEFAULT_LIMIT
+    const offset = getOffset(limit, page)
+    Promise.all([
       Restaurant.findAndCountAll({
         include: Category,
         where: {
-          // 新增查詢條件
-          ...(categoryId ? { categoryId } : {}) // 檢查 categoryId 是否為空值
+          ...(categoryId ? { categoryId } : {})
         },
         limit,
         offset,
@@ -16,7 +21,29 @@ const restaurantService = {
         raw: true
       }),
       Category.findAll({ raw: true })
-    ]).catch(err => next(err))
+    ])
+      .then(([restaurants, categories]) => {
+        const favoritedRestaurantsId = req.user?.FavoritedRestaurants
+          ? req.user.FavoritedRestaurants.map(fr => fr.id)
+          : []
+        const likedRestaurantsId = req.user?.LikedRestaurants
+          ? req.user.LikedRestaurants.map(lr => lr.id)
+          : []
+        const data = restaurants.rows.map(r => ({
+          ...r,
+          description: r.description.substring(0, 50),
+          isFavorited: favoritedRestaurantsId.includes(r.id),
+          isLiked: likedRestaurantsId.includes(r.id)
+        }))
+        // * cb 第一位是留給 error，因此成功的話則為 null
+        return cb(null, {
+          restaurants: data,
+          categories,
+          categoryId,
+          pagination: getPagination(limit, page, restaurants.count)
+        })
+      })
+      .catch(err => cb(err))
   },
   getRestaurant: (restaurantId, next) => {
     return Restaurant.findByPk(restaurantId, {

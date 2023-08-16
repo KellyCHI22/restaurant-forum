@@ -6,7 +6,7 @@ const handlebars = require('express-handlebars')
 const handlebarsHelpers = require('./helpers/handlebars-helpers')
 const flash = require('connect-flash')
 const methodOverride = require('method-override')
-const routes = require('./routes')
+const { pages } = require('./routes')
 const { getUser } = require('./helpers/auth-helpers')
 
 const app = express()
@@ -36,7 +36,7 @@ app.use((req, res, next) => {
   next()
 })
 
-app.use(routes)
+app.use(pages)
 
 app.listen(port, () => {
   console.info(`App is running on http://localhost:${port}`)

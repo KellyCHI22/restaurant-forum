@@ -1,5 +1,5 @@
-const { getOffset, getPagination } = require('../helpers/pagination-helper')
-const adminService = require('../services/admin-service')
+const { getOffset, getPagination } = require('../../helpers/pagination-helper')
+const adminService = require('../../services/admin-service')
 
 const adminController = {
   getRestaurants: (req, res, next) => {

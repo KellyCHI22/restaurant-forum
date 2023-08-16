@@ -1,8 +1,8 @@
 const express = require('express')
 const router = express.Router()
-const adminController = require('../../controllers/admin-controller')
-const categoryController = require('../../controllers/category-controller')
-const upload = require('../../middleware/multer')
+const adminController = require('../../../controllers/pages/admin-controller')
+const categoryController = require('../../../controllers/pages/category-controller')
+const upload = require('../../../middleware/multer')
 
 // * 特別留意路由擺放的順序，應從嚴格到寬鬆
 router.get('/restaurants/create', adminController.createRestaurant)

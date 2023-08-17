@@ -1,15 +1,29 @@
 const { Restaurant, User, Category } = require('../models')
+const { getOffset, getPagination } = require('../helpers/pagination-helper')
 const { localFileHandler } = require('../helpers/file-helpers')
 
 const adminService = {
-  getRestaurants: (limit, offset, next) => {
+  getRestaurants: (req, cb) => {
+    const DEFAULT_LIMIT = 9
+    const page = Number(req.query.page) || 1
+    const limit = Number(req.query.limit) || DEFAULT_LIMIT
+    const offset = getOffset(limit, page)
+
     return Restaurant.findAndCountAll({
       raw: true, //  把 Sequelize 包裝過的一大包物件轉換成格式比較單純的 JS 原生物件
       nest: true, // 把 category 資料包裝成更容易使用的形式
       include: [Category], // 使用 model 的關聯資料時，需要透過 include 把關聯資料拉進來
       limit,
       offset
-    }).catch(err => next(err))
+    })
+      .then(restaurants => {
+        const data = {
+          restaurants: restaurants.rows,
+          pagination: getPagination(limit, page, restaurants.count)
+        }
+        return cb(null, data)
+      })
+      .catch(err => cb(err))
   },
   createRestaurant: next => {
     return Category.findAll({

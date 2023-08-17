@@ -97,13 +97,18 @@ const adminService = {
       })
       .catch(err => next(err))
   },
-  deleteRestaurant: (restaurantId, next) => {
-    return Restaurant.findByPk(restaurantId)
+  deleteRestaurant: (req, cb) => {
+    return Restaurant.findByPk(req.params.id)
       .then(restaurant => {
-        if (!restaurant) throw new Error("Restaurant didn't exist!")
+        if (!restaurant) {
+          const err = new Error("Restaurant didn't exist!")
+          err.status = 404
+          throw err
+        }
         return restaurant.destroy()
       })
-      .catch(err => next(err))
+      .then(deleteRestaurant => cb(null, { data: deleteRestaurant }))
+      .catch(err => cb(err))
   },
   getUsers: next => {
     return User.findAll({

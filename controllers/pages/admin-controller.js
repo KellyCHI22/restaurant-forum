@@ -83,13 +83,13 @@ const adminController = {
       .catch(err => next(err))
   },
   deleteRestaurant: (req, res, next) => {
-    return adminService
-      .deleteRestaurant(req.params.id, next)
-      .then(() => {
-        req.flash('success_messages', 'Restaurant was successfully deleted')
-        res.redirect('/admin/restaurants')
-      })
-      .catch(err => next(err))
+    return adminService.deleteRestaurant(req, (err, data) => {
+      if (err) return next(err)
+      // 考量安全性，將「被刪除的餐廳」存入 deletedData 中
+      req.session.deletedData = data
+      req.flash('success_messages', 'Restaurant was successfully deleted')
+      return res.redirect('/admin/restaurants')
+    })
   },
   getUsers: (req, res, next) => {
     return adminService

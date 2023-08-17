@@ -11,5 +11,19 @@ module.exports = {
     res.redirect('back')
     // 把 Error 物件傳給下一個error handler，繼續處理資料庫出錯、伺服器運作錯誤、網路連線失敗...等狀況
     next(err)
+  },
+  apiErrorHandler (err, req, res, next) {
+    if (err instanceof Error) {
+      res.status(err.status || 500).json({
+        status: 'error',
+        message: `${err.name}: ${err.message}`
+      })
+    } else {
+      res.status(500).json({
+        status: 'error',
+        message: `${err}`
+      })
+    }
+    next(err)
   }
 }

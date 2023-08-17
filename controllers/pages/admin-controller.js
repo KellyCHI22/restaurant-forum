@@ -15,31 +15,12 @@ const adminController = {
       .catch(err => next(err))
   },
   postRestaurant: (req, res, next) => {
-    const { name, tel, address, openingHours, description, categoryId } =
-      req.body // 從 req.body 拿出表單裡的資料
-    // name 是必填，若發先是空值就會終止程式碼，並在畫面顯示錯誤提示
-    // ! 後端需做驗證，防止有心人士調整前端程式碼
-    if (!name) throw new Error('Restaurant name is required!')
-    const { file } = req
-    return adminService
-      .postRestaurant(
-        {
-          name,
-          tel,
-          address,
-          openingHours,
-          description,
-          categoryId,
-          file
-        },
-        next
-      )
-      .then(restaurant => {
-        console.log(restaurant.toJSON())
-        req.flash('success_messages', 'restaurant was successfully created') // 在畫面顯示成功提示
-        res.redirect('/admin/restaurants') // 新增完成後導回後台首頁
-      })
-      .catch(err => next(err))
+    return adminService.postRestaurant(req, (err, data) => {
+      if (err) return next(err)
+      req.session.createdData = data
+      req.flash('success_messages', 'restaurant was successfully created') // 在畫面顯示成功提示
+      return res.redirect('/admin/restaurants') // 新增完成後導回後台首頁
+    })
   },
   getRestaurant: (req, res, next) => {
     return adminService

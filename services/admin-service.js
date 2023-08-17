@@ -30,9 +30,14 @@ const adminService = {
       raw: true
     }).catch(err => next(err))
   },
-  postRestaurant: (restaurantData, next) => {
-    const { name, tel, address, openingHours, description, categoryId, file } =
-      restaurantData
+  postRestaurant: (req, cb) => {
+    const { name, tel, address, openingHours, description, categoryId } =
+      req.body // 從 req.body 拿出表單裡的資料
+    // name 是必填，若發先是空值就會終止程式碼，並在畫面顯示錯誤提示
+    // * 後端需做驗證，防止有心人士調整前端程式碼
+    if (!name) throw new Error('Restaurant name is required!')
+    if (!categoryId) throw new Error('Category is required!')
+    const { file } = req
     return localFileHandler(file)
       .then(filePath => {
         return Restaurant.create({
@@ -47,7 +52,8 @@ const adminService = {
           viewCounts: 0
         })
       })
-      .catch(err => next(err))
+      .then(newRestaurant => cb(null, { restaurant: newRestaurant }))
+      .catch(err => cb(err))
   },
   getRestaurant: (restaurantId, next) => {
     return Restaurant.findByPk(restaurantId, {

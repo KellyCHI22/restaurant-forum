@@ -1,7 +1,11 @@
 const passport = require('passport')
 const LocalStrategy = require('passport-local')
+const passportJWT = require('passport-jwt')
 const bcrypt = require('bcryptjs')
 const { User, Restaurant } = require('../models')
+
+const JWTStrategy = passportJWT.Strategy
+const ExtractJWT = passportJWT.ExtractJwt
 
 // set up Passport strategy
 passport.use(
@@ -43,6 +47,31 @@ passport.use(
     }
   )
 )
+
+// setup passport-jwt
+const jwtOptions = {
+  // 設定去哪裡找 token，設定必須在 header 中設定 bearer token
+  jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(),
+  // 使用密鑰來檢查 token 是否經過纂改
+  secretOrKey: process.env.JWT_SECRET
+}
+// 根據 jwtOptions 裡的資訊，理論上可以成功解開 token，接下來就用解開後的資訊去進行下一步
+passport.use(
+  new JWTStrategy(jwtOptions, (jwtPayload, cb) => {
+    // 使用解析出的 id 去資料庫中尋找 user
+    User.findByPk(jwtPayload.id, {
+      include: [
+        { model: Restaurant, as: 'FavoritedRestaurants' },
+        { model: Restaurant, as: 'VisitedRestaurants' },
+        { model: User, as: 'Followers' },
+        { model: User, as: 'Followings' }
+      ]
+    })
+      .then(user => cb(null, user))
+      .catch(err => cb(err))
+  })
+)
+
 // serialize and deserialize user
 passport.serializeUser((user, cb) => {
   cb(null, user.id)

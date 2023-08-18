@@ -1,6 +1,26 @@
 const jwt = require('jsonwebtoken')
+const userService = require('../../services/user-service')
 
 const userController = {
+  signUp: (req, res, next) => {
+    // 如果兩次輸入的密碼不同，就建立一個 Error 物件並拋出
+    if (req.body.password !== req.body.passwordCheck) {
+      throw new Error('Passwords do not match!')
+    }
+    return userService
+      .signUpUser(req.body.name, req.body.email, req.body.password, next)
+      .then(user => {
+        const userData = user.toJSON()
+        delete userData.password
+        res.json({
+          status: 'success',
+          data: {
+            user: userData
+          }
+        })
+      })
+      .catch(err => next(err)) // 接住前面拋出的錯誤，呼叫專門做錯誤處理的 middleware
+  },
   signIn: (req, res, next) => {
     try {
       const userData = req.user.toJSON()

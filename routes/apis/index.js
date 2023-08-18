@@ -15,6 +15,7 @@ router.use('/admin', authenticated, authenticatedAdmin, admin)
 
 router.get('/restaurants', authenticated, restaurantController.getRestaurants)
 
+router.post('/signup', userController.signUp) // 注意用 post
 // 因為我們不用 cookie-based 驗證了，所以也不需要 Passport 幫我們建立 session，需要把這個功能關掉。
 router.post(
   '/signin',

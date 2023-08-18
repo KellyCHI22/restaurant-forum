@@ -6,14 +6,16 @@ const handlebars = require('express-handlebars')
 const handlebarsHelpers = require('./helpers/handlebars-helpers')
 const flash = require('connect-flash')
 const methodOverride = require('method-override')
+const dotenv = require('dotenv')
 const { pages, apis } = require('./routes')
 const { getUser } = require('./helpers/auth-helpers')
 
+dotenv.config()
+require('./models')
+
 const app = express()
 const port = process.env.PORT || 3000
-const SESSION_SECRET = 'secret' // 新增這行
-
-const db = require('./models')
+const SESSION_SECRET = process.env.MY_SESSION_SECRET
 
 app.engine('hbs', handlebars({ extname: '.hbs', helpers: handlebarsHelpers }))
 app.set('view engine', 'hbs')

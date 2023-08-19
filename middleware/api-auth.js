@@ -6,13 +6,16 @@ const passport = require('../config/passport') // 引入 passport
 // 使用以下的寫法，才能針對 req, res 做處理
 const authenticated = (req, res, next) => {
   passport.authenticate('jwt', { session: false }, (err, user) => {
-    if (err || !user) { return res.status(401).json({ status: 'error', message: 'unauthorized' }) }
+    if (err || !user) {
+      return res.status(401).json({ status: 'error', message: 'unauthorized' })
+    }
 
     next()
   })(req, res, next)
 }
 
 const authenticatedAdmin = (req, res, next) => {
+  // https://stackoverflow.com/questions/40569492/passport-jwt-req-user-is-undefined-in-one-of-my-routes
   if (req.user && req.user.isAdmin) return next()
   return res
     .status(403)

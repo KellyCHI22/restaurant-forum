@@ -3,28 +3,27 @@ const categoryService = require('../../services/category-service')
 const categoryController = {
   getCategories: (req, res, next) => {
     return categoryService.getCategories(req, (err, data) => {
-      err ? next(err) : res.render('admin/categories', data)
+      err ? next(err) : res.json({ status: 'success', data })
+    })
+  },
+  getCategory: (req, res, next) => {
+    return categoryService.getCategory(req, (err, data) => {
+      err ? next(err) : res.json({ status: 'success', data })
     })
   },
   postCategory: (req, res, next) => {
     return categoryService.postCategory(req, (err, data) => {
-      if (err) return next(err)
-      req.flash('success_messages', 'Category was successfully created')
-      res.redirect('/admin/categories')
+      err ? next(err) : res.json({ status: 'success', data })
     })
   },
   putCategory: (req, res, next) => {
     return categoryService.putCategory(req, (err, data) => {
-      if (err) return next(err)
-      req.flash('success_messages', 'Category was successfully updated')
-      res.redirect('/admin/categories')
+      err ? next(err) : res.json({ status: 'success', data })
     })
   },
   deleteCategory: (req, res, next) => {
     return categoryService.deleteCategory(req, (err, data) => {
-      if (err) return next(err)
-      req.flash('success_messages', 'Category was successfully deleted')
-      res.redirect('/admin/categories')
+      err ? next(err) : res.json({ status: 'success', data })
     })
   }
 }

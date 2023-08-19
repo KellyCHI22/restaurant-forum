@@ -25,10 +25,12 @@ const adminService = {
       })
       .catch(err => cb(err))
   },
-  createRestaurant: next => {
+  createRestaurant: (req, cb) => {
     return Category.findAll({
       raw: true
-    }).catch(err => next(err))
+    })
+      .then(categories => cb(null, { categories }))
+      .catch(err => cb(err))
   },
   postRestaurant: (req, cb) => {
     const { name, tel, address, openingHours, description, categoryId } =
@@ -55,8 +57,8 @@ const adminService = {
       .then(newRestaurant => cb(null, { restaurant: newRestaurant }))
       .catch(err => cb(err))
   },
-  getRestaurant: (restaurantId, next) => {
-    return Restaurant.findByPk(restaurantId, {
+  getRestaurant: (req, cb) => {
+    return Restaurant.findByPk(req.params.id, {
       // 去資料庫用 id 找一筆資料
       raw: true, // 找到以後整理格式再回傳
       nest: true,
@@ -65,26 +67,27 @@ const adminService = {
       .then(restaurant => {
         //  如果找不到，回傳錯誤訊息，後面不執行
         if (!restaurant) throw new Error("Restaurant didn't exist!")
-        return restaurant
+        return cb(null, { restaurant })
       })
-      .catch(err => next(err))
+      .catch(err => cb(err))
   },
-  editRestaurant: (restaurantId, next) => {
+  editRestaurant: (req, cb) => {
     return Promise.all([
-      Restaurant.findByPk(restaurantId, { raw: true }),
+      Restaurant.findByPk(req.params.id, { raw: true }),
       Category.findAll({ raw: true })
     ])
       .then(([restaurant, categories]) => {
         if (!restaurant) throw new Error("Restaurant doesn't exist!")
-        return [restaurant, categories]
+        return cb(null, { restaurant, categories })
       })
-      .catch(err => next(err))
+      .catch(err => cb(err))
   },
-  putRestaurant: (restaurantId, restaurantData, next) => {
-    const { name, tel, address, openingHours, description, categoryId, file } =
-      restaurantData
+  putRestaurant: (req, cb) => {
+    const { name, tel, address, openingHours, description, categoryId } =
+      req.body
+    const { file } = req
     return Promise.all([
-      Restaurant.findByPk(restaurantId), // 去資料庫查有沒有這間餐廳
+      Restaurant.findByPk(req.params.id), // 去資料庫查有沒有這間餐廳
       localFileHandler(file) // 把檔案傳到 file-helper 處理
     ])
       .then(([restaurant, filePath]) => {
@@ -101,7 +104,8 @@ const adminService = {
           categoryId
         })
       })
-      .catch(err => next(err))
+      .then(restaurant => cb(null, { restaurant }))
+      .catch(err => cb(err))
   },
   deleteRestaurant: (req, cb) => {
     return Restaurant.findByPk(req.params.id)
@@ -116,13 +120,15 @@ const adminService = {
       .then(deleteRestaurant => cb(null, { data: deleteRestaurant }))
       .catch(err => cb(err))
   },
-  getUsers: next => {
+  getUsers: (req, cb) => {
     return User.findAll({
       raw: true
-    }).catch(err => next(err))
+    })
+      .then(users => cb(null, { users }))
+      .catch(err => cb(err))
   },
-  patchUsers: (userId, next) => {
-    return User.findByPk(userId)
+  patchUser: (req, cb) => {
+    return User.findByPk(req.params.id)
       .then(user => {
         if (!user) throw new Error('User does not exist!')
         if (user.name === 'root') throw new Error('禁止變更 root 權限！')
@@ -130,7 +136,8 @@ const adminService = {
           isAdmin: !user.isAdmin
         })
       })
-      .catch(err => next(err))
+      .then(user => cb(null, { user }))
+      .catch(err => cb(err))
   }
 }
 module.exports = adminService

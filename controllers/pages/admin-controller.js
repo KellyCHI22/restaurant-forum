@@ -7,12 +7,10 @@ const adminController = {
     )
   },
   createRestaurant: (req, res, next) => {
-    return adminService
-      .createRestaurant(next)
-      .then(categories =>
-        res.render('admin/create-restaurant', { categories })
-      )
-      .catch(err => next(err))
+    return adminService.createRestaurant(req, (err, data) => {
+      if (err) return next(err)
+      res.render('admin/create-restaurant', data)
+    })
   },
   postRestaurant: (req, res, next) => {
     return adminService.postRestaurant(req, (err, data) => {
@@ -23,45 +21,23 @@ const adminController = {
     })
   },
   getRestaurant: (req, res, next) => {
-    return adminService
-      .getRestaurant(req.params.id, next)
-      .then(restaurant => {
-        res.render('admin/restaurant', { restaurant })
-      })
-      .catch(err => next(err))
+    return adminService.getRestaurant(req, (err, data) => {
+      if (err) return next(err)
+      res.render('admin/restaurant', data)
+    })
   },
   editRestaurant: (req, res, next) => {
-    return adminService
-      .editRestaurant(req.params.id, next)
-      .then(([restaurant, categories]) => {
-        res.render('admin/edit-restaurant', { restaurant, categories })
-      })
-      .catch(err => next(err))
+    return adminService.editRestaurant(req, (err, data) => {
+      if (err) return next(err)
+      res.render('admin/edit-restaurant', data)
+    })
   },
   putRestaurant: (req, res, next) => {
-    const { name, tel, address, openingHours, description, categoryId } =
-      req.body
-    if (!name) throw new Error('Restaurant name is required!')
-    const { file } = req
-    return adminService
-      .putRestaurant(
-        req.params.id,
-        {
-          name,
-          tel,
-          address,
-          openingHours,
-          description,
-          categoryId,
-          file
-        },
-        next
-      )
-      .then(() => {
-        req.flash('success_messages', 'Restaurant was successfully updated')
-        res.redirect('/admin/restaurants')
-      })
-      .catch(err => next(err))
+    return adminService.putRestaurant(req, (err, data) => {
+      if (err) return next(err)
+      req.flash('success_messages', 'Restaurant was successfully updated')
+      res.redirect('/admin/restaurants')
+    })
   },
   deleteRestaurant: (req, res, next) => {
     return adminService.deleteRestaurant(req, (err, data) => {
@@ -73,19 +49,17 @@ const adminController = {
     })
   },
   getUsers: (req, res, next) => {
-    return adminService
-      .getUsers(next)
-      .then(users => res.render('admin/users', { users }))
-      .catch(err => next(err))
+    return adminService.getUsers(req, (err, data) => {
+      if (err) return next(err)
+      res.render('admin/users', data)
+    })
   },
-  patchUsers: (req, res, next) => {
-    return adminService
-      .patchUsers(req.params.id, next)
-      .then(() => {
-        req.flash('success_messages', '使用者權限變更成功')
-        res.redirect('/admin/users')
-      })
-      .catch(err => next(err))
+  patchUser: (req, res, next) => {
+    return adminService.patchUser(req, (err, data) => {
+      if (err) return next(err)
+      req.flash('success_messages', '使用者權限變更成功')
+      res.redirect('/admin/users')
+    })
   }
 }
 module.exports = adminController

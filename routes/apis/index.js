@@ -13,6 +13,21 @@ const { apiErrorHandler } = require('../../middleware/error-handler') // 新增�
 // authenticated, authenticatedAdmin 都要，因為要先檢驗是否有 token，再檢驗是否為 admin
 router.use('/admin', authenticated, authenticatedAdmin, admin)
 
+router.get(
+  '/restaurants/top',
+  authenticated,
+  restaurantController.getTopRestaurants
+)
+router.get(
+  '/restaurants/latest',
+  authenticated,
+  restaurantController.getLatestRestaurants
+)
+router.get(
+  '/restaurants/:id',
+  authenticated,
+  restaurantController.getRestaurant
+)
 router.get('/restaurants', authenticated, restaurantController.getRestaurants)
 
 router.post('/signup', userController.signUp) // 注意用 post

@@ -7,67 +7,28 @@ const restaurantController = {
     )
   },
   getRestaurant: (req, res, next) => {
-    return restaurantService
-      .getRestaurant(req.params.id, next)
-      .then(restaurant => {
-        const isFavorited = restaurant.FavoritedUsers.some(
-          f => f.id === req.user.id
-        )
-        const isVisited = restaurant.VisitedUsers.some(
-          f => f.id === req.user.id
-        )
-        res.render('restaurant', {
-          restaurant: restaurant.toJSON(),
-          isFavorited,
-          isVisited
-        })
-      })
-      .catch(err => next(err))
+    return restaurantService.getRestaurant(req, (err, data) => {
+      if (err) return next(err)
+      res.render('restaurant', data)
+    })
   },
   getDashboard: (req, res, next) => {
-    return restaurantService
-      .getDashboard(req.params.id, next)
-      .then(restaurant => {
-        res.render('dashboard', { restaurant: restaurant.toJSON() })
-      })
-      .catch(err => next(err))
+    return restaurantService.getDashboard(req, (err, data) => {
+      if (err) return next(err)
+      res.render('dashboard', data)
+    })
   },
   getFeeds: (req, res, next) => {
-    const limit = 10
-    return restaurantService
-      .getFeeds(limit, next)
-      .then(([restaurants, comments]) => {
-        res.render('feeds', {
-          restaurants,
-          comments
-        })
-      })
-      .catch(err => next(err))
+    return restaurantService.getFeeds(req, (err, data) => {
+      if (err) return next(err)
+      res.render('feeds', data)
+    })
   },
   getTopRestaurants: (req, res, next) => {
-    const limit = 10
-    return restaurantService
-      .getTopRestaurants(limit, next)
-      .then(restaurants => {
-        const favoritedRestaurantsId =
-          req.user && req.user.FavoritedRestaurants.map(fr => fr.id)
-        const visitedRestaurantsId =
-          req.user && req.user.VisitedRestaurants.map(fr => fr.id)
-
-        const result = restaurants.map(r => ({
-          ...r,
-          description: r.description.substring(0, 50),
-          isFavorited: favoritedRestaurantsId.includes(r.id),
-          isVisited: visitedRestaurantsId.includes(r.id)
-        }))
-        return result
-      })
-      .then(result =>
-        res.render('top-restaurants', {
-          restaurants: result
-        })
-      )
-      .catch(err => next(err))
+    return restaurantService.getTopRestaurants(req, (err, data) => {
+      if (err) return next(err)
+      res.render('top-restaurants', data)
+    })
   }
 }
 module.exports = restaurantController

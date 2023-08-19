@@ -45,8 +45,8 @@ const restaurantService = {
       })
       .catch(err => cb(err))
   },
-  getRestaurant: (restaurantId, next) => {
-    return Restaurant.findByPk(restaurantId, {
+  getRestaurant: (req, cb) => {
+    return Restaurant.findByPk(req.params.id, {
       nest: true,
       include: [
         Category,
@@ -54,7 +54,7 @@ const restaurantService = {
         { model: User, as: 'FavoritedUsers' },
         { model: User, as: 'VisitedUsers' }
       ],
-      // ! need to define the order at the top level and indicate the model
+      // need to define the order at the top level and indicate the model
       order: [[{ model: Comment }, 'createdAt', 'DESC']]
     })
       .then(restaurant => {
@@ -62,19 +62,33 @@ const restaurantService = {
         restaurant.increment('view_counts')
         return restaurant
       })
-      .catch(err => next(err))
+      .then(restaurant => {
+        const isFavorited = restaurant.FavoritedUsers.some(
+          f => f.id === req.user.id
+        )
+        const isVisited = restaurant.VisitedUsers.some(
+          f => f.id === req.user.id
+        )
+        return cb(null, {
+          restaurant: restaurant.toJSON(),
+          isFavorited,
+          isVisited
+        })
+      })
+      .catch(err => cb(err))
   },
-  getDashboard: (restaurantId, next) => {
-    return Restaurant.findByPk(restaurantId, {
+  getDashboard: (req, cb) => {
+    return Restaurant.findByPk(req.params.id, {
       include: [Category, Comment]
     })
       .then(restaurant => {
         if (!restaurant) throw new Error("Restaurant didn't exist!")
-        return restaurant
+        return cb(null, { restaurant: restaurant.toJSON() })
       })
-      .catch(err => next(err))
+      .catch(err => cb(err))
   },
-  getFeeds: (limit, next) => {
+  getFeeds: (req, cb) => {
+    const limit = req.query.limit || 10
     return Promise.all([
       Restaurant.findAll({
         // 取最新的 10 筆餐廳資料
@@ -92,24 +106,53 @@ const restaurantService = {
         raw: true,
         nest: true
       })
-    ]).catch(err => next(err))
+    ])
+      .then(([restaurants, comments]) => cb(null, { restaurants, comments }))
+      .catch(err => next(err))
+  },
+  getLatestRestaurants: (req, cb) => {
+    const limit = parseInt(req.query.limit) || 10
+    return Restaurant.findAll({
+      // 取最新的 10 筆餐廳資料
+      limit,
+      order: [['createdAt', 'DESC']],
+      include: [Category],
+      raw: true,
+      nest: true
+    })
+      .then(restaurants => cb(null, { restaurants }))
+      .catch(err => cb(err))
   },
   // ? 不知道怎麼用 sequelize 去執行 sort
-  getTopRestaurants: (limit, next) => {
+  getTopRestaurants: (req, cb) => {
+    const limit = parseInt(req.query.limit) || 10
     return Restaurant.findAll({
       include: [{ model: User, as: 'FavoritedUsers' }],
-      limit: limit
+      limit
     })
       .then(restaurants => {
-        const result = restaurants
+        return restaurants
           .map(r => ({
             ...r.toJSON(),
             favoritedUsersCount: r.FavoritedUsers.length
           }))
           .sort((a, b) => b.favoritedUsersCount - a.favoritedUsersCount)
-        return result
       })
-      .catch(err => next(err))
+      .then(restaurants => {
+        const favoritedRestaurantsId =
+          req.user && req.user.FavoritedRestaurants.map(fr => fr.id)
+        const visitedRestaurantsId =
+          req.user && req.user.VisitedRestaurants.map(fr => fr.id)
+
+        const result = restaurants.map(r => ({
+          ...r,
+          description: r.description.substring(0, 50),
+          isFavorited: favoritedRestaurantsId.includes(r.id),
+          isVisited: visitedRestaurantsId.includes(r.id)
+        }))
+        return cb(null, { restaurants: result })
+      })
+      .catch(err => cb(err))
   }
 }
 module.exports = restaurantService

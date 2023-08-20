@@ -26,14 +26,14 @@ const restaurantService = {
         const favoritedRestaurantsId = req.user?.FavoritedRestaurants
           ? req.user.FavoritedRestaurants.map(fr => fr.id)
           : []
-        const likedRestaurantsId = req.user?.LikedRestaurants
-          ? req.user.LikedRestaurants.map(lr => lr.id)
+        const visitedRestaurantsId = req.user?.VisitedRestaurants
+          ? req.user.VisitedRestaurants.map(lr => lr.id)
           : []
         const data = restaurants.rows.map(r => ({
           ...r,
           description: r.description.substring(0, 50),
           isFavorited: favoritedRestaurantsId.includes(r.id),
-          isLiked: likedRestaurantsId.includes(r.id)
+          isVisited: visitedRestaurantsId.includes(r.id)
         }))
         // * cb 第一位是留給 error，因此成功的話則為 null
         return cb(null, {
@@ -108,7 +108,7 @@ const restaurantService = {
       })
     ])
       .then(([restaurants, comments]) => cb(null, { restaurants, comments }))
-      .catch(err => next(err))
+      .catch(err => cb(err))
   },
   getLatestRestaurants: (req, cb) => {
     const limit = parseInt(req.query.limit) || 10

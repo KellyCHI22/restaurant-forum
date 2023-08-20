@@ -3,23 +3,10 @@ const userService = require('../../services/user-service')
 
 const userController = {
   signUp: (req, res, next) => {
-    // 如果兩次輸入的密碼不同，就建立一個 Error 物件並拋出
-    if (req.body.password !== req.body.passwordCheck) {
-      throw new Error('Passwords do not match!')
-    }
-    return userService
-      .signUpUser(req.body.name, req.body.email, req.body.password, next)
-      .then(user => {
-        const userData = user.toJSON()
-        delete userData.password
-        res.json({
-          status: 'success',
-          data: {
-            user: userData
-          }
-        })
-      })
-      .catch(err => next(err)) // 接住前面拋出的錯誤，呼叫專門做錯誤處理的 middleware
+    userService.signUpUser(req, (err, data) => {
+      if (err) return next(err) // 接住前面拋出的錯誤，呼叫專門做錯誤處理的 middleware
+      res.json({ status: 'success', data })
+    })
   },
   signIn: (req, res, next) => {
     try {
@@ -41,6 +28,60 @@ const userController = {
       // jwt.sign() 本身不是非同步事件，執行完成後也不會回傳 Promise 物件
       // 因此需要用 try & catch 來處理錯誤時的情況
     }
+  },
+  getUser: (req, res, next) => {
+    userService.getUser(req, (err, data) => {
+      if (err) return next(err)
+      res.json({ status: 'success', data })
+    })
+  },
+  putUser: (req, res, next) => {
+    userService.putUser(req, (err, data) => {
+      if (err) return next(err)
+      res.json({ status: 'success', data })
+    })
+  },
+  addFavorite: (req, res, next) => {
+    userService.addFavorite(req, (err, data) => {
+      if (err) return next(err)
+      res.json({ status: 'success', data })
+    })
+  },
+  deleteFavorite: (req, res, next) => {
+    userService.deleteFavorite(req, (err, data) => {
+      if (err) return next(err)
+      res.json({ status: 'success', data })
+    })
+  },
+  addVisitHistory: (req, res, next) => {
+    userService.addVisitHistory(req, (err, data) => {
+      if (err) return next(err)
+      res.json({ status: 'success', data })
+    })
+  },
+  deleteVisitHistory: (req, res, next) => {
+    userService.deleteVisitHistory(req, (err, data) => {
+      if (err) return next(err)
+      res.json({ status: 'success', data })
+    })
+  },
+  getTopUsers: (req, res, next) => {
+    userService.getTopUsers(req, (err, data) => {
+      if (err) return next(err)
+      res.json({ status: 'success', data })
+    })
+  },
+  addFollowing: (req, res, next) => {
+    userService.addFollowing(req, (err, data) => {
+      if (err) return next(err)
+      res.json({ status: 'success', data })
+    })
+  },
+  deleteFollowing: (req, res, next) => {
+    userService.deleteFollowing(req, (err, data) => {
+      if (err) return next(err)
+      res.json({ status: 'success', data })
+    })
   }
 }
 

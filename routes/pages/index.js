@@ -70,7 +70,7 @@ router.post(
 router.delete(
   '/favorite/:restaurantId',
   authenticated,
-  userController.removeFavorite
+  userController.deleteFavorite
 )
 
 // * visit history
@@ -82,7 +82,7 @@ router.post(
 router.delete(
   '/visit-history/:restaurantId',
   authenticated,
-  userController.removeVisitHistory
+  userController.deleteVisitHistory
 )
 
 // * followship，追蹤的對象是「某個使用者」，因此這邊動態路由是取 :userId
@@ -90,7 +90,7 @@ router.post('/following/:userId', authenticated, userController.addFollowing)
 router.delete(
   '/following/:userId',
   authenticated,
-  userController.removeFollowing
+  userController.deleteFollowing
 )
 
 router.use('/', (req, res) => res.redirect('/restaurants'))

@@ -10,7 +10,12 @@ const {
 } = require('../models')
 
 const userService = {
-  signUpUser: (name, email, password, next) => {
+  signUpUser: (req, cb) => {
+    const { name, email, password, passwordCheck } = req.body
+    // 如果兩次輸入的密碼不同，就建立一個 Error 物件並拋出
+    if (password !== passwordCheck) {
+      throw new Error('Passwords do not match!')
+    }
     // 確認資料裡面沒有一樣的 email，若有，就建立一個 Error 物件並拋出
     return User.findOne({ where: { email } })
       .then(user => {
@@ -25,9 +30,15 @@ const userService = {
           password: hash
         })
       )
-      .catch(err => next(err)) // 接住前面拋出的錯誤，呼叫專門做錯誤處理的 middleware
+      .then(user => {
+        const userData = user.toJSON()
+        delete userData.password
+        cb(null, { user: userData })
+      })
+      .catch(err => cb(err)) // 接住前面拋出的錯誤，呼叫專門做錯誤處理的 middleware
   },
-  getUser: (userId, next) => {
+  getUser: (req, cb) => {
+    const userId = req.params.id
     return Promise.all([
       User.findByPk(userId, {
         nest: true,
@@ -45,7 +56,8 @@ const userService = {
           },
           { model: User, as: 'Followers', attributes: ['id', 'image'] },
           { model: User, as: 'Followings', attributes: ['id', 'image'] }
-        ]
+        ],
+        attributes: ['id', 'name', 'email', 'image', 'createdAt', 'updatedAt']
       }),
       Comment.findAll({
         where: { userId },
@@ -55,24 +67,39 @@ const userService = {
         group: ['Restaurant.id']
       })
     ])
-      .then(([user, comments]) => {
+      .then(([user, userComments]) => {
         if (!user) throw new Error("User didn't exist!")
-        return [user, comments]
+        const result = {
+          shownUser: {
+            ...user.toJSON(),
+            isFollowed: req.user.Followings.some(
+              following => following.id === user.id
+            )
+          },
+          comments: userComments
+        }
+        return cb(null, result)
       })
-      .catch(err => next(err))
+      .catch(err => cb(err))
   },
-  editUser: (userId, next) => {
+  editUser: (req, cb) => {
+    const userId = req.params.id
     return User.findByPk(userId, {
       nest: true,
       attributes: ['id', 'name']
     })
       .then(user => {
         if (!user) throw new Error("User doesn't exist!")
-        return user.toJSON()
+        return cb(null, { shownUser: user.toJSON() })
       })
-      .catch(err => next(err))
+      .catch(err => cb(err))
   },
-  putUser: (userId, name, file, next) => {
+  putUser: (req, cb) => {
+    const { name } = req.body
+    const { file } = req
+    const userId = req.params.id
+    if (!name) throw new Error('User name is required!')
+
     return Promise.all([
       User.findByPk(userId), // 去資料庫查有沒有這間餐廳
       localFileHandler(file) // 把檔案傳到 file-helper 處理
@@ -84,9 +111,12 @@ const userService = {
           image: filePath || user.image
         })
       })
-      .catch(err => next(err))
+      .then(user => cb(null, { user }))
+      .catch(err => cb(err))
   },
-  addFavorite: (userId, restaurantId, next) => {
+  addFavorite: (req, cb) => {
+    const restaurantId = req.params.restaurantId || req.body.restaurantId
+    const userId = req.user.id
     return Promise.all([
       Restaurant.findByPk(restaurantId),
       // * 搜尋 favorite，檢查這個收藏關係是否已經存在
@@ -108,9 +138,12 @@ const userService = {
           restaurantId
         })
       })
-      .catch(err => next(err))
+      .then(favorite => cb(null, { favorite }))
+      .catch(err => cb(err))
   },
-  removeFavorite: (userId, restaurantId, next) => {
+  deleteFavorite: (req, cb) => {
+    const restaurantId = req.params.restaurantId || req.body.restaurantId
+    const userId = req.user.id
     // * 直接找出該收藏關係，若存在，即刪除
     return Favorite.findOne({
       where: {
@@ -122,9 +155,12 @@ const userService = {
         if (!favorite) throw new Error("You haven't favorited this restaurant")
         return favorite.destroy()
       })
-      .catch(err => next(err))
+      .then(favorite => cb(null, { deletedFavorite: favorite }))
+      .catch(err => cb(err))
   },
-  addVisitHistory: (userId, restaurantId, next) => {
+  addVisitHistory: (req, cb) => {
+    const restaurantId = req.params.restaurantId || req.body.restaurantId
+    const userId = req.user.id
     return Promise.all([
       Restaurant.findByPk(restaurantId),
       VisitHistory.findOne({
@@ -146,9 +182,12 @@ const userService = {
           restaurantId
         })
       })
-      .catch(err => next(err))
+      .then(visitHistory => cb(null, { visitHistory }))
+      .catch(err => cb(err))
   },
-  removeVisitHistory: (userId, restaurantId, next) => {
+  deleteVisitHistory: (req, cb) => {
+    const restaurantId = req.params.restaurantId || req.body.restaurantId
+    const userId = req.user.id
     return VisitHistory.findOne({
       where: {
         userId,
@@ -161,9 +200,11 @@ const userService = {
         }
         return visitHistory.destroy()
       })
-      .catch(err => next(err))
+      .then(deletedHistory => cb(null, { deletedHistory }))
+      .catch(err => cb(err))
   },
-  getTopUsers: (limit, next) => {
+  getTopUsers: (req, cb) => {
+    const limit = parseInt(req.query.limit) || 5
     // 撈出所有 User 與 followers 資料
     return User.findAll({
       include: [{ model: User, as: 'Followers' }],
@@ -179,10 +220,22 @@ const userService = {
           .sort((a, b) => b.followerCount - a.followerCount)
         return result
       })
-      .catch(err => next(err))
+      .then(users => {
+        const result = users.map(user => ({
+          ...user,
+          isFollowed: req.user.Followings.some(f => f.id === user.id)
+        }))
+        return cb(null, { users: result })
+      })
+      .catch(err => cb(err))
   },
   // * 追蹤與收藏的邏輯雷同，先反查確定關係尚未存在，再新增追蹤紀錄
-  addFollowing: (followerId, followingId, next) => {
+  addFollowing: (req, cb) => {
+    const followingId = req.params.userId // 要追蹤的使用者
+    const followerId = req.params.id || req.user.id // 目前登入的使用者
+    if (parseInt(followingId) === parseInt(followerId)) {
+      throw new Error('You cannot follow yourself!')
+    }
     return Promise.all([
       User.findByPk(followingId),
       Followship.findOne({
@@ -200,9 +253,12 @@ const userService = {
           followingId
         })
       })
-      .catch(err => next(err))
+      .then(followship => cb(null, { followship }))
+      .catch(err => cb(err))
   },
-  removeFollowing: (followerId, followingId, next) => {
+  deleteFollowing: (req, cb) => {
+    const followingId = req.params.userId
+    const followerId = req.params.id || req.user.id
     return Followship.findOne({
       where: {
         followerId,
@@ -213,7 +269,8 @@ const userService = {
         if (!followship) throw new Error("You haven't followed this user!")
         return followship.destroy()
       })
-      .catch(err => next(err))
+      .then(followship => cb(null, { deletedFollowship: followship }))
+      .catch(err => cb(err))
   }
 }
 

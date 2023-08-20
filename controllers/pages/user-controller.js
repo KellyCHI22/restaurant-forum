@@ -5,17 +5,11 @@ const userController = {
     res.render('signup')
   },
   signUp: (req, res, next) => {
-    // 如果兩次輸入的密碼不同，就建立一個 Error 物件並拋出
-    if (req.body.password !== req.body.passwordCheck) {
-      throw new Error('Passwords do not match!')
-    }
-    return userService
-      .signUpUser(req.body.name, req.body.email, req.body.password, next)
-      .then(() => {
-        req.flash('success_messages', '成功註冊帳號！') // 並顯示成功訊息
-        res.redirect('/signin')
-      })
-      .catch(err => next(err)) // 接住前面拋出的錯誤，呼叫專門做錯誤處理的 middleware
+    return userService.signUpUser(req, (err, data) => {
+      if (err) return next(err)
+      req.flash('success_messages', '成功註冊帳號！') // 並顯示成功訊息
+      res.redirect('/signin')
+    })
   },
   signInPage: (req, res) => {
     res.render('signin')
@@ -31,17 +25,9 @@ const userController = {
   },
   getUser: (req, res, next) => {
     return userService
-      .getUser(req.params.id)
-      .then(([user, userComments]) => {
-        res.render('users/profile', {
-          shownUser: {
-            ...user.toJSON(),
-            isFollowed: req.user.Followings.some(
-              following => following.id === user.id
-            )
-          },
-          comments: userComments
-        })
+      .getUser(req, (err, data) => {
+        if (err) return next(err)
+        res.render('users/profile', data)
       })
       .catch(err => next(err))
   },
@@ -49,87 +35,62 @@ const userController = {
     if (parseInt(req.params.id) !== parseInt(req.user.id)) {
       return res.redirect(`/users/${req.params.id}`)
     }
-    return userService
-      .editUser(req.params.id)
-      .then(user => {
-        res.render('users/edit', { shownUser: user })
-      })
-      .catch(err => next(err))
+    return userService.editUser(req, (err, data) => {
+      if (err) return next(err)
+      res.render('users/edit', data)
+    })
   },
   putUser: (req, res, next) => {
     if (parseInt(req.params.id) !== parseInt(req.user.id)) {
       return res.redirect(`/users/${req.params.id}`)
     }
-    const { name } = req.body
-    const { file } = req
-    if (!name) throw new Error('User name is required!')
-    return userService
-      .putUser(req.params.id, name, file, next)
-      .then(() => {
-        req.flash('success_messages', 'User was successfully updated')
-        res.redirect(`/users/${req.params.id}`)
-      })
-      .catch(err => next(err))
+    return userService.putUser(req, (err, data) => {
+      if (err) return next(err)
+      req.flash('success_messages', 'User was successfully updated')
+      res.redirect(`/users/${req.params.id}`)
+    })
   },
   addFavorite: (req, res, next) => {
-    const { restaurantId } = req.params
-    return userService
-      .addFavorite(req.user.id, restaurantId, next)
-      .then(() => res.redirect('back'))
-      .catch(err => next(err))
+    return userService.addFavorite(req, (err, data) => {
+      if (err) return next(err)
+      res.redirect('back')
+    })
   },
-  removeFavorite: (req, res, next) => {
-    const { restaurantId } = req.params
-    return userService
-      .removeFavorite(req.user.id, restaurantId, next)
-      .then(() => res.redirect('back'))
-      .catch(err => next(err))
+  deleteFavorite: (req, res, next) => {
+    return userService.deleteFavorite(req, (err, data) => {
+      if (err) return next(err)
+      res.redirect('back')
+    })
   },
   addVisitHistory: (req, res, next) => {
-    const { restaurantId } = req.params
-    return userService
-      .addVisitHistory(req.user.id, restaurantId, next)
-      .then(() => res.redirect('back'))
-      .catch(err => next(err))
+    return userService.addVisitHistory(req, (err, data) => {
+      if (err) return next(err)
+      res.redirect('back')
+    })
   },
-  removeVisitHistory: (req, res, next) => {
-    const { restaurantId } = req.params
-    return userService
-      .removeVisitHistory(req.user.id, restaurantId, next)
-      .then(() => res.redirect('back'))
-      .catch(err => next(err))
+  deleteVisitHistory: (req, res, next) => {
+    return userService.deleteVisitHistory(req, (err, data) => {
+      if (err) return next(err)
+      res.redirect('back')
+    })
   },
   getTopUsers: (req, res, next) => {
-    const limit = 5
-    return userService
-      .getTopUsers(limit, next)
-      .then(users => {
-        const result = users.map(user => ({
-          ...user,
-          isFollowed: req.user.Followings.some(f => f.id === user.id)
-        }))
-        res.render('top-users', { users: result })
-      })
-      .catch(err => next(err))
+    return userService.getTopUsers(req, (err, data) => {
+      if (err) return next(err)
+      res.render('top-users', data)
+    })
   },
   addFollowing: (req, res, next) => {
-    const followingId = req.params.userId
-    const followerId = req.user.id
-    if (parseInt(followingId) === parseInt(followerId)) {
-      throw new Error('You cannot follow yourself!')
-    }
-    return userService
-      .addFollowing(followerId, followingId, next)
-      .then(() => res.redirect('back'))
-      .catch(err => next(err))
+    return userService.addFollowing(req, (err, data) => {
+      if (err) return next(err)
+      res.redirect('back')
+    })
   },
-  removeFollowing: (req, res, next) => {
-    const followingId = req.params.userId
-    const followerId = req.user.id
-    return userService
-      .removeFollowing(followerId, followingId, next)
-      .then(() => res.redirect('back'))
-      .catch(err => next(err))
+  deleteFollowing: (req, res, next) => {
+    return userService.deleteFollowing(req, (err, data) => {
+      if (err) return next(err)
+      res.redirect('back')
+    })
   }
 }
 

@@ -4,6 +4,7 @@ const passport = require('../../config/passport')
 const admin = require('./modules/admin')
 const restaurantController = require('../../controllers/apis/restaurant-controller')
 const userController = require('../../controllers/apis/user-controller')
+const commentController = require('../../controllers/apis/comment-controller')
 const {
   authenticated,
   authenticatedAdmin
@@ -23,6 +24,26 @@ router.get(
   authenticated,
   restaurantController.getLatestRestaurants
 )
+
+router.get(
+  '/restaurants/:id/comments',
+  authenticated,
+  commentController.getComments
+)
+
+router.post(
+  '/restaurants/:id/comments',
+  authenticated,
+  commentController.postComment
+)
+
+router.delete(
+  '/restaurants/:id/comments/:commentId',
+  authenticated,
+  authenticatedAdmin,
+  commentController.deleteComment
+)
+
 router.get(
   '/restaurants/:id',
   authenticated,

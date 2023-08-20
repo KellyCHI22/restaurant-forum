@@ -11,7 +11,7 @@ router.put(
   adminController.putRestaurant
 )
 router.delete('/restaurants/:id', adminController.deleteRestaurant)
-router.get('/categories/:id', categoryController.getCategory)
+
 router.put('/categories/:id', categoryController.putCategory)
 router.delete('/categories/:id', categoryController.deleteCategory)
 

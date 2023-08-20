@@ -11,14 +11,6 @@ const categoryService = {
       .then(([categories, category]) => cb(null, { categories, category }))
       .catch(err => cb(err))
   },
-  getCategory: (req, cb) => {
-    return Category.findByPk(req.params.id)
-      .then(category => {
-        if (!category) throw new Error("Category doesn't exist!")
-        return cb(null, { category })
-      })
-      .catch(err => cb(err))
-  },
   postCategory: (req, cb) => {
     const { name } = req.body
     if (!name) throw new Error('Category name is required!')

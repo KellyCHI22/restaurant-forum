@@ -6,11 +6,6 @@ const categoryController = {
       err ? next(err) : res.json({ status: 'success', data })
     })
   },
-  getCategory: (req, res, next) => {
-    return categoryService.getCategory(req, (err, data) => {
-      err ? next(err) : res.json({ status: 'success', data })
-    })
-  },
   postCategory: (req, res, next) => {
     return categoryService.postCategory(req, (err, data) => {
       err ? next(err) : res.json({ status: 'success', data })

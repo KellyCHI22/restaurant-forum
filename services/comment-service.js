@@ -13,6 +13,18 @@ const commentService = {
       .then(comments => cb(null, { comments }))
       .catch(err => cb(err))
   },
+  getLatestComments: (req, cb) => {
+    const limit = parseInt(req.query.limit) || 10
+    return Comment.findAll({
+      limit,
+      order: [['createdAt', 'DESC']],
+      include: [{ model: User, attributes: ['id', 'name', 'image'] }],
+      nest: true,
+      raw: true
+    })
+      .then(comments => cb(null, { comments }))
+      .catch(err => cb(err))
+  },
   postComment: (req, cb) => {
     const { text } = req.body
     const restaurantId = req.params.id || req.body.restaurantId

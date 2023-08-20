@@ -82,6 +82,11 @@ router.get(
 
 // * get, add, delete comments
 router.get(
+  '/restaurants/comments',
+  authenticated,
+  commentController.getLatestComments
+)
+router.get(
   '/restaurants/:id/comments',
   authenticated,
   commentController.getComments

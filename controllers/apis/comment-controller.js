@@ -7,6 +7,12 @@ const commentController = {
       res.json({ status: 'success', data })
     })
   },
+  getLatestComments: (req, res, next) => {
+    commentService.getLatestComments(req, (err, data) => {
+      if (err) return next(err)
+      res.json({ status: 'success', data })
+    })
+  },
   postComment: (req, res, next) => {
     commentService.postComment(req, (err, data) => {
       if (err) return next(err)
@@ -14,7 +20,7 @@ const commentController = {
     })
   },
   deleteComment: (req, res, next) => {
-    return commentService.deleteComment(req, (err, data) => {
+    commentService.deleteComment(req, (err, data) => {
       if (err) return next(err)
       res.json({ status: 'success', data })
     })

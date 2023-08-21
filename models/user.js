@@ -47,7 +47,17 @@ module.exports = (sequelize, DataTypes) => {
       sequelize,
       modelName: 'User',
       tableName: 'Users',
-      underscored: true
+      underscored: true,
+      // https://stackoverflow.com/questions/27972271/sequelize-dont-return-password
+      // omit sensitive data when retrieving data from db
+      defaultScope: {
+        attributes: { exclude: ['password'] }
+      },
+      scopes: {
+        withPassword: {
+          attributes: {}
+        }
+      }
     }
   )
   return User

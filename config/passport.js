@@ -21,29 +21,31 @@ passport.use(
     },
     // authenticate user
     (req, email, password, cb) => {
-      User.findOne({ where: { email } }).then(user => {
-        // 從資料庫裡找 user, 若此 user email 不存在
-        if (!user) {
-          return cb(
-            null,
-            false, // 只要在第二位帶入 false 就代表登入不成功
-            req.flash('error_messages', '帳號或密碼輸入錯誤！')
-          )
-        }
-        // 若使用者存在，比對密碼
-        bcrypt.compare(password, user.password).then(res => {
-          // 若密碼錯誤
-          if (!res) {
+      User.scope('withPassword') // need to use 'withPassword' scope or the password wont be sent back
+        .findOne({ where: { email } })
+        .then(user => {
+          // 從資料庫裡找 user, 若此 user email 不存在
+          if (!user) {
             return cb(
               null,
-              false,
+              false, // 只要在第二位帶入 false 就代表登入不成功
               req.flash('error_messages', '帳號或密碼輸入錯誤！')
             )
           }
-          // 若密碼也通過驗證
-          return cb(null, user)
+          // 若使用者存在，比對密碼
+          bcrypt.compare(password, user.password).then(res => {
+            // 若密碼錯誤
+            if (!res) {
+              return cb(
+                null,
+                false,
+                req.flash('error_messages', '帳號或密碼輸入錯誤！')
+              )
+            }
+            // 若密碼也通過驗證
+            return cb(null, user)
+          })
         })
-      })
     }
   )
 )

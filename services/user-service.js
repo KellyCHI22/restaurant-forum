@@ -131,7 +131,9 @@ const userService = {
       .then(([restaurant, favorite]) => {
         if (!restaurant) throw customError(404, "Restaurant didn't exist!")
         // * 若此收藏關係存在，則丟 error
-        if (favorite) { throw customError(400, 'You have favorited this restaurant!') }
+        if (favorite) {
+          throw customError(400, 'You have favorited this restaurant!')
+        }
 
         // * 新增一筆新的 Favorite
         return Favorite.create({
@@ -153,7 +155,9 @@ const userService = {
       }
     })
       .then(favorite => {
-        if (!favorite) { throw customError(404, "You haven't favorited this restaurant") }
+        if (!favorite) {
+          throw customError(404, "You haven't favorited this restaurant")
+        }
         return favorite.destroy()
       })
       .then(favorite => cb(null, { deletedFavorite: favorite }))
@@ -212,7 +216,17 @@ const userService = {
     const limit = parseInt(req.query.limit) || 5
     // 撈出所有 User 與 followers 資料
     return User.findAll({
-      include: [{ model: User, as: 'Followers' }],
+      include: [
+        {
+          model: User,
+          as: 'Followers',
+          attributes: ['id', 'name', 'image'],
+          // https://stackoverflow.com/questions/73267872/how-to-exclude-attributes-from-nested-model-in-sequelize
+          through: {
+            attributes: []
+          }
+        }
+      ],
       limit
     })
       .then(users => {
@@ -252,7 +266,9 @@ const userService = {
     ])
       .then(([user, followship]) => {
         if (!user) throw customError(404, "User didn't exist!")
-        if (followship) { throw customError(400, 'You are already following this user!') }
+        if (followship) {
+          throw customError(400, 'You are already following this user!')
+        }
         return Followship.create({
           followerId,
           followingId
@@ -271,7 +287,9 @@ const userService = {
       }
     })
       .then(followship => {
-        if (!followship) { throw customError(404, "You haven't followed this user!") }
+        if (!followship) {
+          throw customError(404, "You haven't followed this user!")
+        }
         return followship.destroy()
       })
       .then(followship => cb(null, { deletedFollowship: followship }))

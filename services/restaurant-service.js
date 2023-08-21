@@ -1,5 +1,6 @@
 const { Restaurant, Category, Comment, User } = require('../models')
 const { getOffset, getPagination } = require('../helpers/pagination-helper')
+const { customError } = require('../helpers/error-helper')
 
 const restaurantService = {
   // * 使用 callback function 將 data 和 error 做後續處理，這邊就不需要 next 了
@@ -58,7 +59,7 @@ const restaurantService = {
       order: [[{ model: Comment }, 'createdAt', 'DESC']]
     })
       .then(restaurant => {
-        if (!restaurant) throw new Error("Restaurant didn't exist!")
+        if (!restaurant) throw customError(404, "Restaurant didn't exist!")
         restaurant.increment('view_counts')
         return restaurant
       })
@@ -82,7 +83,7 @@ const restaurantService = {
       include: [Category, Comment]
     })
       .then(restaurant => {
-        if (!restaurant) throw new Error("Restaurant didn't exist!")
+        if (!restaurant) throw customError(404, "Restaurant didn't exist!")
         return cb(null, { restaurant: restaurant.toJSON() })
       })
       .catch(err => cb(err))

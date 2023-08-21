@@ -1,5 +1,6 @@
 const bcrypt = require('bcryptjs') // 載入 bcrypt
 const { localFileHandler } = require('../helpers/file-helpers')
+const { customError } = require('../helpers/error-helper')
 const {
   User,
   Comment,
@@ -14,12 +15,12 @@ const userService = {
     const { name, email, password, passwordCheck } = req.body
     // 如果兩次輸入的密碼不同，就建立一個 Error 物件並拋出
     if (password !== passwordCheck) {
-      throw new Error('Passwords do not match!')
+      throw customError(400, 'Passwords do not match!')
     }
     // 確認資料裡面沒有一樣的 email，若有，就建立一個 Error 物件並拋出
     return User.findOne({ where: { email } })
       .then(user => {
-        if (user) throw new Error('Email already exists!')
+        if (user) throw customError(400, 'Email already exists!')
         return bcrypt.hash(password, 10) // 前面加 return
       })
       .then(hash =>
@@ -68,7 +69,7 @@ const userService = {
       })
     ])
       .then(([user, userComments]) => {
-        if (!user) throw new Error("User didn't exist!")
+        if (!user) throw customError(404, "User didn't exist!")
         const result = {
           shownUser: {
             ...user.toJSON(),
@@ -89,7 +90,7 @@ const userService = {
       attributes: ['id', 'name']
     })
       .then(user => {
-        if (!user) throw new Error("User doesn't exist!")
+        if (!user) throw customError(404, "User doesn't exist!")
         return cb(null, { shownUser: user.toJSON() })
       })
       .catch(err => cb(err))
@@ -98,14 +99,14 @@ const userService = {
     const { name } = req.body
     const { file } = req
     const userId = req.params.id
-    if (!name) throw new Error('User name is required!')
+    if (!name) throw customError(400, 'User name is required!')
 
     return Promise.all([
       User.findByPk(userId), // 去資料庫查有沒有這間餐廳
       localFileHandler(file) // 把檔案傳到 file-helper 處理
     ])
       .then(([user, filePath]) => {
-        if (!user) throw new Error("User doesn't exist!")
+        if (!user) throw customError(404, "User doesn't exist!")
         return user.update({
           name,
           image: filePath || user.image
@@ -128,9 +129,9 @@ const userService = {
       })
     ])
       .then(([restaurant, favorite]) => {
-        if (!restaurant) throw new Error("Restaurant didn't exist!")
+        if (!restaurant) throw customError(404, "Restaurant didn't exist!")
         // * 若此收藏關係存在，則丟 error
-        if (favorite) throw new Error('You have favorited this restaurant!')
+        if (favorite) { throw customError(400, 'You have favorited this restaurant!') }
 
         // * 新增一筆新的 Favorite
         return Favorite.create({
@@ -152,7 +153,7 @@ const userService = {
       }
     })
       .then(favorite => {
-        if (!favorite) throw new Error("You haven't favorited this restaurant")
+        if (!favorite) { throw customError(404, "You haven't favorited this restaurant") }
         return favorite.destroy()
       })
       .then(favorite => cb(null, { deletedFavorite: favorite }))
@@ -171,9 +172,10 @@ const userService = {
       })
     ])
       .then(([restaurant, visitHistory]) => {
-        if (!restaurant) throw new Error("Restaurant didn't exist!")
+        if (!restaurant) throw customError(404, "Restaurant didn't exist!")
         if (visitHistory) {
-          throw new Error(
+          throw customError(
+            400,
             'You have already added this restaurant to your history!'
           )
         }
@@ -196,7 +198,10 @@ const userService = {
     })
       .then(visitHistory => {
         if (!visitHistory) {
-          throw new Error("You haven't added this restaurant to your history!")
+          throw customError(
+            404,
+            "You haven't added this restaurant to your history!"
+          )
         }
         return visitHistory.destroy()
       })
@@ -234,7 +239,7 @@ const userService = {
     const followingId = req.params.userId // 要追蹤的使用者
     const followerId = req.params.id || req.user.id // 目前登入的使用者
     if (parseInt(followingId) === parseInt(followerId)) {
-      throw new Error('You cannot follow yourself!')
+      throw customError(400, 'You cannot follow yourself!')
     }
     return Promise.all([
       User.findByPk(followingId),
@@ -246,8 +251,8 @@ const userService = {
       })
     ])
       .then(([user, followship]) => {
-        if (!user) throw new Error("User didn't exist!")
-        if (followship) throw new Error('You are already following this user!')
+        if (!user) throw customError(404, "User didn't exist!")
+        if (followship) { throw customError(400, 'You are already following this user!') }
         return Followship.create({
           followerId,
           followingId
@@ -266,7 +271,7 @@ const userService = {
       }
     })
       .then(followship => {
-        if (!followship) throw new Error("You haven't followed this user!")
+        if (!followship) { throw customError(404, "You haven't followed this user!") }
         return followship.destroy()
       })
       .then(followship => cb(null, { deletedFollowship: followship }))

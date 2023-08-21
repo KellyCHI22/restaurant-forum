@@ -1,6 +1,7 @@
 const { Restaurant, User, Category } = require('../models')
 const { getOffset, getPagination } = require('../helpers/pagination-helper')
 const { localFileHandler } = require('../helpers/file-helpers')
+const { customError } = require('../helpers/error-helper')
 
 const adminService = {
   getRestaurants: (req, cb) => {
@@ -37,8 +38,8 @@ const adminService = {
       req.body // 從 req.body 拿出表單裡的資料
     // name 是必填，若發先是空值就會終止程式碼，並在畫面顯示錯誤提示
     // * 後端需做驗證，防止有心人士調整前端程式碼
-    if (!name) throw new Error('Restaurant name is required!')
-    if (!categoryId) throw new Error('Category is required!')
+    if (!name) throw customError(400, 'Restaurant name is required!')
+    if (!categoryId) throw customError(400, 'Category is required!')
     const { file } = req
     return localFileHandler(file)
       .then(filePath => {
@@ -66,7 +67,7 @@ const adminService = {
     })
       .then(restaurant => {
         //  如果找不到，回傳錯誤訊息，後面不執行
-        if (!restaurant) throw new Error("Restaurant didn't exist!")
+        if (!restaurant) throw customError(404, "Restaurant didn't exist!")
         return cb(null, { restaurant })
       })
       .catch(err => cb(err))
@@ -77,7 +78,7 @@ const adminService = {
       Category.findAll({ raw: true })
     ])
       .then(([restaurant, categories]) => {
-        if (!restaurant) throw new Error("Restaurant doesn't exist!")
+        if (!restaurant) throw customError(404, "Restaurant doesn't exist!")
         return cb(null, { restaurant, categories })
       })
       .catch(err => cb(err))
@@ -91,7 +92,7 @@ const adminService = {
       localFileHandler(file) // 把檔案傳到 file-helper 處理
     ])
       .then(([restaurant, filePath]) => {
-        if (!restaurant) throw new Error("Restaurant didn't exist!")
+        if (!restaurant) throw customError(404, "Restaurant didn't exist!")
         return restaurant.update({
           name,
           tel,
@@ -111,9 +112,7 @@ const adminService = {
     return Restaurant.findByPk(req.params.id)
       .then(restaurant => {
         if (!restaurant) {
-          const err = new Error("Restaurant didn't exist!")
-          err.status = 404
-          throw err
+          throw customError(404, "Restaurant didn't exist!")
         }
         return restaurant.destroy()
       })
@@ -130,8 +129,13 @@ const adminService = {
   patchUser: (req, cb) => {
     return User.findByPk(req.params.id)
       .then(user => {
-        if (!user) throw new Error('User does not exist!')
-        if (user.name === 'root') throw new Error('禁止變更 root 權限！')
+        if (!user) throw customError(404, 'User does not exist!')
+        if (user.name === 'root') {
+          throw customError(
+            403,
+            'Changing root user authorization is not allowed'
+          )
+        }
         return user.update({
           isAdmin: !user.isAdmin
         })

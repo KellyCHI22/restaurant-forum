@@ -1,4 +1,5 @@
 const { Category } = require('../models')
+const { customError } = require('../helpers/error-helper')
 
 const categoryService = {
   getCategories: (req, cb) => {
@@ -13,17 +14,17 @@ const categoryService = {
   },
   postCategory: (req, cb) => {
     const { name } = req.body
-    if (!name) throw new Error('Category name is required!')
+    if (!name) throw customError(400, 'Category name is required!')
     return Category.create({ name })
       .then(category => cb(null, { category }))
       .catch(err => cb(err))
   },
   putCategory: (req, cb) => {
     const { name } = req.body
-    if (!name) throw new Error('Category name is required!')
+    if (!name) throw customError(400, 'Category name is required!')
     return Category.findByPk(req.params.id)
       .then(category => {
-        if (!category) throw new Error("Category doesn't exist!")
+        if (!category) throw customError(404, "Category doesn't exist!")
         return category.update({ name })
       })
       .then(category => cb(null, { category }))
@@ -32,7 +33,7 @@ const categoryService = {
   deleteCategory: (req, cb) => {
     return Category.findByPk(req.params.id)
       .then(category => {
-        if (!category) throw new Error("Category didn't exist!")
+        if (!category) throw customError(404, "Category didn't exist!")
         return category.destroy()
       })
       .then(category => cb(null, { category }))

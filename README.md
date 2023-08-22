@@ -4,8 +4,6 @@
 
 An MVC restaurant forum app where users can explore various restaurants and interact with other users. Built with express.js, sequelize, mySQL and handlebars.
 
-This project is also available in web API form, see API DOCUMENTS for more info.
-
 ### 👀 Screenshots
 
 Users can view restaurants according to categories, add them to favorites and mark them as "visited".
@@ -32,7 +30,7 @@ Admin users can manage restaurant data, user authorization settings and categori
 
 ![](public/screenshots/screenshot_6.png)
 
-### ⚙️ Features 功能
+### ⚙️ Features
 
 - Users can login or create a new account
 - Users can view all the restaurants or filter them according to categories
@@ -46,6 +44,10 @@ Admin users can manage restaurant data, user authorization settings and categori
 - Admin users can create, edit and delete all restaurants data
 - Admin users can change other users authorization settings
 - Admin users can create, edit and delete categories data
+
+### ERD (Entity Relationship Diagram)
+
+![](public/screenshots/screenshot_7.png)
 
 ## 🚀 Run Locally
 
